@@ -4,6 +4,8 @@
 
 `include "OP_CODES.sv"
 
+
+// TODO: verify ALU work logic for bugs 
 module ALU #(
     parameter SIZE = 8 
 ) (
@@ -18,6 +20,7 @@ module ALU #(
     logic carry_out_w;
     logic [SIZE-1:0] op_out_w;
 
+    // TODO: add ci (Carry in)
     always_comb begin
         carry_out_w = 0;
         op_out_w = '0;
