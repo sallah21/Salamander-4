@@ -12,8 +12,8 @@ module top_level #(
     input clk,
     input rstn
   );
-  state_t curr_state;
-  state_t next_state;
+  state_t curr_state /* synthesis preserve */;
+  state_t next_state /* synthesis preserve */;
   // ===============================================
   // Processor State Descriptions
   // ===============================================
