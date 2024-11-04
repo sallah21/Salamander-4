@@ -1,27 +1,28 @@
+`timescale 1ns / 1ps
 /**
     Accumulator module 
 */
 
 module ACU
-   #(
-     parameter SIZE = 8 // Corrected parameter declaration
+  #(
+     parameter SIZE = 8 // Parameter declaration
    )
    (
-     input clk,
-     input rstn,
-     input CE, // TODO: check if there will by case where you dont want to write into ACC
-     input [SIZE-1:0] in_val,
-     output [SIZE-1:0] out_val 
+     input logic clk,
+     input logic rstn,
+     input logic CE, // Control Enable: writes to the accumulator when high
+     input logic [SIZE-1:0] in_val,
+     output logic [SIZE-1:0] out_val
    );
 
   // Internal value register
-  reg [SIZE-1:0] int_val_r;
+  logic [SIZE-1:0] int_val_r;
 
-  always @(posedge clk or negedge rstn) 
+  always @(posedge clk or negedge rstn)
   begin
     if (!rstn)
     begin
-      int_val_r <= {SIZE{1'b0}}; 
+      int_val_r <= {SIZE{1'b0}};
     end
     else
     begin

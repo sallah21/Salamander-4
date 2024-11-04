@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 /**
     Memory for instruction fetching 
 */
@@ -8,12 +9,12 @@ module PROG_MEM #(
   ) (
     input clk,
     input rstn,
-    input ADDR,
-    output DATA
+    input  [ADDR_SIZE-1:0] ADDR,
+    output [DATA_SIZE-1:0] DATA
   );
 
   logic [DATA_SIZE-1:0] int_mem_r [2**ADDR_SIZE-1:0];
-  always_ff @(posedge clk or negedge rstn)
+  always @(posedge clk or negedge rstn)
   begin
     if (!rstn)
     begin

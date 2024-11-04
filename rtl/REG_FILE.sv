@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 /**
     Register File module
 */
@@ -13,7 +14,7 @@ module REG_FILE (
   reg [7:0] DATA_r [3:0] ;
   reg [7:0] DATA_OUT_r;
 
-  always_ff @( posedge CLK or negedge RSTN )
+  always @( posedge CLK or negedge RSTN )
   begin
     if (!RSTN)
     begin

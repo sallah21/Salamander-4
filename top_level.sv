@@ -1,4 +1,4 @@
-
+`timescale 1ns / 1ps
 typedef enum logic [1:0] {
           FETCH,
           DECODE,
@@ -60,7 +60,7 @@ module top_level #(
   //   - Control signals set here will guide the ALU or memory access in the EXEC phase.
   // ===============================================
 
-  always_ff @( posedge clk or negedge rstn )
+  always @( posedge clk or negedge rstn )
   begin
     if (!rstn)
     begin
@@ -69,7 +69,7 @@ module top_level #(
     end
     else
     begin
-        curr_state <= next_state;
+      curr_state <= next_state;
       case (curr_state)
         FETCH:
         begin
@@ -119,7 +119,7 @@ module top_level #(
   localparam PC_SIZE = 5;
   reg [PC_SIZE-1:0] PC_ADDR_r;
   reg max_size_reached_r;
-  wire PC_inc_w;
+  logic PC_inc_w;
   PC  #(
         .SIZE(5)
       )
@@ -139,7 +139,7 @@ module top_level #(
   localparam DATA_SIZE = 6;
   localparam ADDR_SIZE = 5;
 
-  reg [ADDR_SIZE-1:0] PROG_MEM_INSTRUCTION_r;
+  reg [DATA_SIZE-1:0] PROG_MEM_INSTRUCTION_r;
 
   PROG_MEM #(
              .DATA_SIZE(DATA_SIZE),
@@ -165,7 +165,7 @@ module top_level #(
   logic [1:0] ADDR_w;
   logic       ACC_CE_w;
   logic [3:0] CE_w;
-  wire        ID_CE_w ;
+  logic        ID_CE_w ;
   ID ID_inst
      (
        .INSTR(PROG_MEM_INSTRUCTION_r),
@@ -182,24 +182,28 @@ module top_level #(
 
   reg carry_out_r;
   logic [SIZE-1:0] ALU_op_out_w;
-
+  wire [7:0] ALU_left_operand_w;
+  wire [7:0] ALU_right_operand_w;
   ALU #(
         .SIZE(SIZE)
       ) ALU_inst
       (
         .CE(ACC_CE_w), // TODO: check if its good or dumb
         .OP_CODE(OP_CODE_latch),
-        .left_operand(ALU_out_val_w),
-        .right_operand(REG_FILE_DATA_OUT_w),
-        .carry_in(carry_out_r), // TODO: Check this wiring  
+        .left_operand(ALU_left_operand_w),
+        .right_operand(ALU_right_operand_w),
+        .carry_in(carry_out_r), // TODO: Check this wiring
         .carry_out(carry_out_r),
         .op_out(ALU_op_out_w)
       );
 
+  assign ALU_left_operand_w = ALU_out_val_w;
+  assign ALU_right_operand_w = REG_FILE_DATA_OUT_w;
+  
   //////////////////////////////////////////////////////////////////////////////////////
   // Accumulator logic
   ///////////////////////////////////////////////////////////////////////////////////////
-  logic ALU_out_val_w;
+  wire [7:0] ALU_out_val_w;
   ACU #(
         .SIZE(SIZE)
       ) ACU_inst (
@@ -216,7 +220,7 @@ module top_level #(
   ///////////////////////////////////////////////////////////////////////////////////////
 
   wire [7:0] REG_FILE_DATA_OUT_w;
-
+  
   REG_FILE  REG_FILE_inst (
               .CLK(clk),
               .RSTN(rstn),

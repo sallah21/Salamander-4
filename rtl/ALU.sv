@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 /**
     Arithmetical Logical Unit module
 */
@@ -21,9 +22,9 @@ module ALU #(
     logic carry_out_w;
     logic [SIZE-1:0] op_out_w;
 
-    always_comb begin
+    always @(*) begin
         carry_out_w = 0;
-        op_out_w = '0;
+        op_out_w = 1'b0;
 
         if (CE) begin
             case (OP_CODE)

@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 /**
     Instruction decoder module
 */
@@ -25,9 +26,9 @@ module ID (
  * 
  */
 
-wire [3:0] CE_w;
+logic [3:0] CE_w;
 
- always_comb begin
+ always @(*) begin
     case (INSTR [4:2])
     OP_ST: begin 
         case(INSTR[1:0]) 
