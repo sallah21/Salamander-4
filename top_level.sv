@@ -69,8 +69,8 @@ module CPU_toplevel #(
       next_state <= FETCH;
     end
     else
-        curr_state <= next_state;
     begin
+        curr_state <= next_state;
       case (curr_state)
         FETCH:
         begin
