@@ -10,7 +10,7 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
-vvp ex1
+vvp -l log.txt ex1
 
 if [ $? -ne 0 ]; then
     echo Running simulation failure
