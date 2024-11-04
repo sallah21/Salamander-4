@@ -2,7 +2,7 @@
     Arithmetical Logical Unit module
 */
 
-`include "OP_CODES.sv"
+// `include "OP_CODES.sv"
 
 
 // TODO: verify ALU work logic for bugs 

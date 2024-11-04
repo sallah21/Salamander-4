@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-// `include "../top_level.sv"
+#include "../top_level.sv"
  module CPU_toplevel_tb;
 
    // Parameters
@@ -20,7 +20,7 @@
    wire [3:0] CE;
 
    // Instantiate the DUT
-   top_level #(.SIZE(SIZE)) DUT (
+   CPU_toplevel #(.SIZE(SIZE)) DUT (
                   .clk(clk),
                   .rstn(rstn)
                 );

@@ -24,14 +24,14 @@ module PC
   begin
     if (!rstn)
     begin
-      cnt <= {SIZE{1'b0}};
+      cnt_r <= {SIZE{1'b0}};
       max_size_reached_r <= 1'b0;
     end
     else
     begin
       if (inc)
       begin
-        if (cnt <= MAX_VAL) begin
+        if (cnt_r <= MAX_VAL) begin
             cnt_r <= cnt_r + 5'b1; 
         end
         else begin

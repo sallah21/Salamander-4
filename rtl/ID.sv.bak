@@ -2,7 +2,7 @@
     Instruction decoder module
 */
 
-// `include "OP_CODES.sv"
+`include "OP_CODES.sv"
 
 module ID (
     input [5:0] INSTR,
@@ -10,7 +10,7 @@ module ID (
     output [2:0] OP_CODE,
     output [1:0] ADDR, 
     output [3:0] CE,
-    output      ACC_CE
+    output      ACC_CE,
 );
 /*
  * Instrction content Description:

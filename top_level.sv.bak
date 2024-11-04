@@ -6,11 +6,12 @@ typedef enum logic [1:0] {
           WRITE_BACK
         } state_t;
 
-module top_level #(
+module CPU_toplevel #(
     parameter SIZE = 8
   ) (
     input clk,
-    input rstn
+    input rstn,
+
   );
   state_t curr_state;
   state_t next_state;
@@ -193,7 +194,7 @@ module top_level #(
         .right_operand(REG_FILE_DATA_OUT_w),
         .carry_in(carry_out_r), // TODO: Check this wiring  
         .carry_out(carry_out_r),
-        .op_out(ALU_op_out_w)
+        .op_out(ALU_op_out_w),
       );
 
   //////////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +206,7 @@ module top_level #(
       ) ACU_inst (
         .clk(clk),
         .rstn(rstn),
-        .CE(ACC_CE_latch), // TODO: Verify usage of this port
+        .CE(ACC_CE_w), // TODO: Verify usage of this port
         .in_val(ALU_op_out_w),
         .out_val (ALU_out_val_w)
       );
@@ -220,8 +221,8 @@ module top_level #(
   REG_FILE  REG_FILE_inst (
               .CLK(clk),
               .RSTN(rstn),
-              .ADDR(ADDR_latch),
-              .CE(CE_latch),
+              .ADDR(ADDR_w),
+              .CE(CE_w),
               .DATA_IN(ALU_op_out_w),
               .DATA_OUT (REG_FILE_DATA_OUT_w)
             );

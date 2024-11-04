@@ -2,7 +2,7 @@
     Memory for instruction fetching 
 */
 
-module MEM #(
+module PROG_MEM #(
     parameter DATA_SIZE = 6,
     parameter ADDR_SIZE = 5
   ) (
