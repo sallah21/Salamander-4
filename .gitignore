@@ -1,3 +1,8 @@
 *.bkp
 *ex1*
 *.txt
+*.log
+*.bak
+*.vcd
+*.vcd*
+*.vcd.gz
