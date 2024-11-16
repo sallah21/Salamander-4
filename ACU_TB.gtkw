@@ -1,0 +1,29 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sat Nov 16 15:55:38 2024
+[*]
+[dumpfile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/ACU.vcd"
+[dumpfile_mtime] "Sat Nov 16 15:54:59 2024"
+[dumpfile_size] 4231
+[savefile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/ACU_TB.gtkw"
+[timestart] 0
+[size] 1288 600
+[pos] -1 -1
+*0.000000 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] ACU_TB.
+[sst_width] 253
+[signals_width] 144
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@28
+ACU_TB.DUT.clk
+@29
+ACU_TB.DUT.rstn
+@28
+ACU_TB.DUT.CE
+@22
+ACU_TB.DUT.in_val[7:0]
+ACU_TB.DUT.int_val_r[7:0]
+ACU_TB.DUT.out_val[7:0]
+[pattern_trace] 1
+[pattern_trace] 0

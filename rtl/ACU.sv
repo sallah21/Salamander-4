@@ -22,7 +22,7 @@ module ACU
   begin
     if (!rstn)
     begin
-      int_val_r <= {SIZE{1'b0}};
+      int_val_r <= {SIZE{1'bz}};
     end
     else
     begin
@@ -34,4 +34,16 @@ module ACU
   end
 
   assign out_val = int_val_r;
+
+`ifdef FORMAL
+  property data_stable_during_ce_low;
+    @(posedge clk)
+    disable iff (!rstn)
+    (!CE && $fell(CE)) |=> $stable(out_val);
+  endproperty
+
+  assert property (data_stable_during_ce_low) 
+    else $error("Data changed while CE was low!");
+
+`endif
 endmodule
