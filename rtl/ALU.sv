@@ -3,10 +3,6 @@
     Arithmetical Logical Unit module
 */
 
-// `include "OP_CODES.sv"
-
-
-// TODO: verify ALU work logic for bugs 
 module ALU #(
     parameter SIZE = 8 
 ) (
@@ -43,5 +39,25 @@ module ALU #(
 
     assign carry_out = carry_out_w;
     assign op_out = op_out_w;
+`ifdef FORMAL
+    property ALU_stable_when_CE_is_low;
+        @($fell(CE)) 
+        until ($rose(CE))
+         ($stable(op_out)&& $stable(carry_out));
+    endproperty
 
+    assert ALU_stable_when_CE_is_low else
+        $display("ALU is not stable when CE is low");
+
+    property output_changes_when_CE_is_high;
+        @($rose(CE)) 
+        until ($fell(CE))
+         ($changed(op_out));
+    endproperty
+
+    assert output_changes_when_CE_is_high else
+        $display("ALU output does not change when CE is high");
+
+    
+`endif
 endmodule
