@@ -13,47 +13,25 @@ module REG_FILE (
   );
   reg [7:0] DATA_r [3:0] ;
   reg [7:0] DATA_OUT_r;
-
   always @( posedge CLK or negedge RSTN )
   begin
     if (!RSTN)
-    begin
-      for ( int i  = 0 ; i <4 ; i++ )
+      for (int i = 0; i < 4; i++)
       begin
-        DATA_r [i] <= 8'bz;
+        DATA_r[i] <= 8'b0; 
       end
-    end
     else
     begin
-      case (ADDR)
-        2'b00: begin 
-            if (CE[0]) begin
-                DATA_r [ADDR] <= DATA_IN;
-            end 
-            DATA_OUT_r <= DATA_r [ADDR]; // NOTE: Should take one cycle if both CE[x] is enabled and register is read 
-        end 
-        2'b01: begin 
-            if (CE[1]) begin
-                DATA_r [ADDR] <= DATA_IN;
-            end 
-            DATA_OUT_r <= DATA_r [ADDR]; // NOTE: Should take one cycle if both CE[x] is enabled and register is read 
-        end 
-        2'b10: begin 
-            if (CE[2]) begin
-                DATA_r [ADDR] <= DATA_IN;
-            end 
-            DATA_OUT_r <= DATA_r [ADDR]; // NOTE: Should take one cycle if both CE[x] is enabled and register is read 
-        end 
-        2'b11: begin 
-            if (CE[3]) begin
-                DATA_r [ADDR] <= DATA_IN;
-            end 
-            DATA_OUT_r <= DATA_r [ADDR]; // NOTE: Should take one cycle if both CE[x] is enabled and register is read 
-        end 
-
-      endcase
+      for (int i = 0; i < 4; i++)
+      begin
+        if (CE[i])
+        begin
+          DATA_r[i] <= DATA_IN;
+        end
+      end
+      DATA_OUT_r <= DATA_r[ADDR];
     end
 
   end
-assign DATA_OUT = DATA_OUT_r;
+  assign DATA_OUT = DATA_OUT_r;
 endmodule
