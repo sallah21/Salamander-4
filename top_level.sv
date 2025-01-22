@@ -7,10 +7,15 @@ typedef enum logic [1:0] {
         } state_t;
 
 module top_level #(
-    parameter SIZE = 8
+    parameter SIZE = 8,
+    parameter DATA_SIZE = 6,
+    parameter ADDR_SIZE = 5
   ) (
     input clk,
-    input rstn
+    input rstn,
+    input W,
+    input [DATA_SIZE-1:0] DATA_WR,
+    input [ADDR_SIZE-1:0] ADDR
   );
   state_t curr_state /* synthesis preserve */;
   state_t next_state /* synthesis preserve */;
@@ -95,7 +100,13 @@ module top_level #(
         begin
           PC_inc_w <= 1'b0;
           ID_CE_w <= 1'b0;
-          next_state <= FETCH; // ??? There wil be more states or nah ?
+          next_state <= WRITE_BACK; 
+        end
+        WRITE_BACK:
+        begin
+          PC_inc_w <= 1'b0;
+          ID_CE_w <= 1'b0;
+          next_state <= FETCH;
         end
         default:
         begin
@@ -128,19 +139,16 @@ module top_level #(
         .clk(clk),
         .rstn(rstn),
         .inc(PC_inc_w),
-        .cnt_val(PC_ADDR_r),
+        .cnt_val(PC_ADDR_r), // Memory address
         .max_size_reached(max_size_reached_r)
       );
 
   ///////////////////////////////////////////////////////////////////////////////////////
   // Program Memory logic
   ///////////////////////////////////////////////////////////////////////////////////////
-
-  localparam DATA_SIZE = 6;
-  localparam ADDR_SIZE = 5;
-
   reg [DATA_SIZE-1:0] PROG_MEM_INSTRUCTION_r;
-
+  wire [ADDR_SIZE-1:0] PC_ADDR_w;
+  assign PC_ADDR_w = (W) ? ADDR : PC_ADDR_r;
   PROG_MEM #(
              .DATA_SIZE(DATA_SIZE),
              .ADDR_SIZE(ADDR_SIZE)
@@ -148,8 +156,10 @@ module top_level #(
            (
              .clk(clk),
              .rstn(rstn),
-             .ADDR(PC_ADDR_r),
-             .DATA(PROG_MEM_INSTRUCTION_r)
+             .W(W), // Memory write on high
+             .ADDR(PC_ADDR_w), // Input memory address
+             .DATA_WR(DATA_WR), // Input instruction data
+             .DATA(PROG_MEM_INSTRUCTION_r) // Output instruction data
            );
 
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -166,9 +176,10 @@ module top_level #(
   logic       ACC_CE_w;
   logic [3:0] CE_w;
   logic        ID_CE_w ;
+  logic [5:0]  INSTR_w;
   ID ID_inst
      (
-       .INSTR(PROG_MEM_INSTRUCTION_r),
+       .INSTR(INSTR_w),
        .ID_CE(ID_CE_w),
        .OP_CODE(OP_CODE_w),
        .ADDR(ADDR_w),
@@ -188,11 +199,11 @@ module top_level #(
         .SIZE(SIZE)
       ) ALU_inst
       (
-        .CE(ACC_CE_w), // TODO: check if its good or dumb
+        .CE(ACC_CE_w), 
         .OP_CODE(OP_CODE_latch),
         .left_operand(ALU_left_operand_w),
         .right_operand(ALU_right_operand_w),
-        .carry_in(carry_out_r), // TODO: Check this wiring
+        .carry_in(carry_out_r), 
         .carry_out(carry_out_r),
         .op_out(ALU_op_out_w)
       );

@@ -1,0 +1,31 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sun Dec 29 17:47:30 2024
+[*]
+[dumpfile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/ID.vcd"
+[dumpfile_mtime] "Sun Dec 29 17:46:17 2024"
+[dumpfile_size] 2961
+[savefile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/ID_TB.gtkw"
+[timestart] 0
+[size] 1904 942
+[pos] 1687 7
+*-17.100000 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] ID_TB.
+[sst_width] 253
+[signals_width] 128
+[sst_expanded] 1
+[sst_vpaned_height] 278
+@28
+ID_TB.DUT.ACC_CE
+ID_TB.DUT.ADDR[1:0]
+@22
+ID_TB.DUT.CE[3:0]
+ID_TB.DUT.CE_w[3:0]
+@28
+ID_TB.DUT.ID_CE
+@22
+ID_TB.DUT.INSTR[5:0]
+@28
+ID_TB.DUT.OP_CODE[2:0]
+[pattern_trace] 1
+[pattern_trace] 0

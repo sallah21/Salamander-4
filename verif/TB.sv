@@ -4,19 +4,29 @@ module CPU_toplevel_tb;
 
    // Parameters
    localparam SIZE = 8;
+   localparam DATA_SIZE = 6;
+   localparam ADDR_SIZE = 5;
    localparam CLK_PERIOD = 10;
 
    // Signals
    reg clk;
    reg rstn;
+   reg W;
+   reg [DATA_SIZE-1:0] DATA_WR;
+   reg [ADDR_SIZE-1:0] ADDR;
    
    // For monitoring
    integer file_handle;
    
    // Instantiate the DUT
-   top_level #(.SIZE(SIZE)) DUT (
+   top_level #(.SIZE(SIZE),
+              .DATA_SIZE(DATA_SIZE),
+              .ADDR_SIZE(ADDR_SIZE)) DUT (
        .clk(clk),
-       .rstn(rstn)
+       .rstn(rstn),
+       .W(W),
+       .ADDR(ADDR),
+       .DATA_IN(DATA_WR),
    );
 
    // Clock Generation
@@ -26,6 +36,23 @@ module CPU_toplevel_tb;
      forever
        #(CLK_PERIOD / 2) clk = ~clk;
    end
+
+   // Write to memory
+   function void write_memory(input [ADDR_SIZE-1:0] addr, input [DATA_SIZE-1:0] data);  
+     begin
+       DUT.memory[addr] = data;
+     end
+   endfunction
+
+   // Initialize memory
+   function void init_memory();
+     begin
+       write_memory(0, 6'b000000);
+       write_memory(1, 6'b000001);
+       write_memory(2, 6'b000010);
+       write_memory(3, 6'b000011);
+     end
+   endfunction
 
    // Reset Process
    initial
