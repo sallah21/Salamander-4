@@ -11,12 +11,15 @@ module PC
      input clk,
      input inc,
      input rstn,
+     input [SIZE-1:0] inc_val,
      output [SIZE-1:0] cnt_val,
      output max_size_reached
    );
   // Internal counter value
   reg [SIZE-1:0] cnt_r;
   reg max_size_reached_r;
+  reg [SIZE-1:0] inc_val_r;
+
   localparam SIZEMINONE = SIZE - 1;
   localparam [SIZE-1:0] MAX_VAL = (2**SIZE) -1;
 
@@ -33,7 +36,7 @@ module PC
       begin
         if (cnt_r < MAX_VAL)
         begin
-          cnt_r <= cnt_r + 5'b1;
+          cnt_r <= cnt_r + inc_val_r;
         end
         else
         begin
