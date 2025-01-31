@@ -142,6 +142,42 @@ initial begin
     right_operand = op_out;
     repeat(10) @(posedge clk);
 
+    // Test Phase 10: increment value
+    $display("Starting Test Phase 10: increment value");
+    CE = 1;
+    OP_CODE = OP_INC; 
+    left_operand = 8'b00000001;
+    right_operand = 8'b00000000;
+    carry_in = 0;
+    repeat(10) @(posedge clk);
+
+    // Test Phase 11: decrement value
+    $display("Starting Test Phase 11: decrement value");
+    CE = 1;
+    OP_CODE = OP_DEC; 
+    left_operand = 8'b10000000;
+    right_operand = 8'b00000000;
+    carry_in = 0;
+    repeat(10) @(posedge clk);
+
+    // Test Phase 12: bit shift left
+    $display("Starting Test Phase 12: bit shift left");
+    CE = 1;
+    OP_CODE = OP_SHL; 
+    left_operand = 8'b00010000;
+    right_operand = 8'b00000001;
+    carry_in = 0;
+    repeat(10) @(posedge clk);
+
+    // Test Phase 13: bit shift right
+    $display("Starting Test Phase 13: bit shift right");
+    CE = 1;
+    OP_CODE = OP_SHR; 
+    left_operand = 8'b00010000;
+    right_operand = 8'b00000001;
+    carry_in = 0;
+    repeat(10) @(posedge clk);
+
     // Finish Simulation
     $display("Testbench completed at %0t ns", $time);
     if (file_handle) begin

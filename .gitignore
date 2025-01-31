@@ -6,3 +6,4 @@
 *.vcd
 *.vcd*
 *.vcd.gz
+layered_tb/

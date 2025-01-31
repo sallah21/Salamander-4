@@ -24,8 +24,8 @@ Arithmetic instructions:
 - [x] Store
 - [ ] Move
 - [ ] Compare
-- [ ] Increment
-- [ ] Decrement
+- [x] Increment
+- [x] Decrement
 
 Total number of arithmetic instructions : 8
 
