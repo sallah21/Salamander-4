@@ -129,6 +129,7 @@ module top_level #(
 
   localparam PC_SIZE = 5;
   reg [PC_SIZE-1:0] PC_ADDR_r;
+  reg [PC_SIZE-1:0] PC_inc_valr=5'b00001;
   reg max_size_reached_r;
   logic PC_inc_w;
   PC  #(
@@ -139,6 +140,7 @@ module top_level #(
         .clk(clk),
         .rstn(rstn),
         .inc(PC_inc_w),
+        .inc_val(PC_inc_valr),
         .cnt_val(PC_ADDR_r), // Memory address
         .max_size_reached(max_size_reached_r)
       );

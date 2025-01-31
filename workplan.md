@@ -1,0 +1,43 @@
+# Instruction exansion
+ - Jump instructions:
+    - Jump not zero
+    - Jump always
+    - Jump zero
+    - Jump not carry
+    - Jump carry
+    - Jump overflow
+    - Jump not overflow
+    - Jump equal
+    - Jump not equal
+ - Arithmetic instructions:
+    - Add
+    - Subtract
+    - Multiply
+    - Divide
+    - Load
+    - Store
+    - Move
+    - Compare
+    - Increment
+    - Decrement
+ - Logic instructions:
+    - And
+    - Or
+    - Not
+    - Xor
+ - Shift instructions:
+    - Shift left
+    - Shift right
+    - Rotate left
+    - Rotate right
+ - Control instructions:
+    - Call
+    - Return
+    - Jump
+    - Jump indirect
+    - Jump relative
+    - Jump indirect relative
+ - Special instructions:
+    - Halt
+
+Total number of instructions: 23 -> reduce to 16 
