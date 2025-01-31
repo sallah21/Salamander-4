@@ -7,7 +7,7 @@ module ALU #(
     parameter SIZE = 8
   ) (
     input CE,
-    input [2:0] OP_CODE, // 3-bit code for operation
+    input [3:0] OP_CODE, // 4-bit code for operation
     input [SIZE-1:0] left_operand,
     input [SIZE-1:0] right_operand,
     input carry_in,
@@ -42,6 +42,14 @@ module ALU #(
           op_out_w = right_operand;
         OP_ST:
           op_out_w = left_operand;
+        OP_INC:
+          op_out_w = left_operand + {{(SIZE-1){1'b0}}, 1'b1};
+        OP_DEC:
+          op_out_w = left_operand - {{(SIZE-1){1'b0}}, 1'b1};
+        OP_SHL:
+          op_out_w = left_operand << 1;
+        OP_SHR:
+          op_out_w = left_operand >> 1;
         default:
           op_out_w = 'z;
       endcase
