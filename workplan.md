@@ -40,8 +40,8 @@ Total number of logic instructions : 4
 
 Shift instructions:
 
-- [ ] Shift left
-- [ ] Shift right
+- [x] Shift left
+- [x] Shift right
 - [ ] Rotate left
 - [ ] Rotate right
 
@@ -60,16 +60,16 @@ Total number of control instructions : 6
 
 Special instructions:
 
-- [ ] Halt
-- [ ] Nop
+- [x] Halt
+- [x] Nop
 
 Total number of special instructions : 4
 
 Total number of instructions: 34 -> reduce to 16
 
-Total number of instructions implemented: 8
+Total number of instructions implemented: 16
 
-Total number of instructions not implemented: 26
+Total number of instructions not implemented: 18
 
 ## Verification of fellow course member
 

@@ -19,6 +19,11 @@ typedef enum logic [3:0]{
     // Shift operations
     OP_SHL  = 4'b1010, // Shift left operation
     OP_SHR  = 4'b1011, // Shift right operation
-    // Control operations
+    // Special operations
+    OP_NOP  = 4'b1100, // No operation
+    OP_HLT  = 4'b1101,  // Halt operation
+    // Jump operations
+    OP_JZ   = 4'b1110, // Jump if zero
+    OP_JNZ  = 4'b1111  // Jump if not zero
 
 } OPERATION_CODE;
