@@ -11,12 +11,14 @@ module ALU #(
     input [SIZE-1:0] left_operand,
     input [SIZE-1:0] right_operand,
     input carry_in,
+    output zero_flag,
     output carry_out,
     output [SIZE-1:0] op_out
   );
 
   logic carry_out_w;
   logic [SIZE-1:0] op_out_w;
+  logic zero_flag_w;
 
   always @(*)
   begin
@@ -54,7 +56,12 @@ module ALU #(
           op_out_w = 'z;
         OP_HLT:
           op_out_w = 'z;
-
+        OP_JZ:
+          if (zero_flag == 0)
+            op_out_w = 'z;
+        OP_JNZ:
+          if (zero_flag != 0)
+            op_out_w = 'z;
         // TODO: implement jump operations
         default:
           op_out_w = 'z;
@@ -64,6 +71,8 @@ module ALU #(
 
   assign carry_out = carry_out_w;
   assign op_out = op_out_w;
+  assign zero_flag = zero_flag_w;
+
 `ifdef FORMAL
 
   //////////////////////////////////////////////////////////////////////////////////////////
