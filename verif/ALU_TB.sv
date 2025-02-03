@@ -10,7 +10,7 @@ localparam CLK_PERIOD = 10;
 reg clk;
 reg rstn;
 reg CE;
-reg [2:0] OP_CODE;
+reg [3:0] OP_CODE;
 reg [SIZE-1:0] left_operand;
 reg [SIZE-1:0] right_operand;
 reg carry_in;

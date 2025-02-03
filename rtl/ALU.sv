@@ -52,8 +52,6 @@ module ALU #(
           op_out_w = left_operand << 1;
         OP_SHR:
           op_out_w = left_operand >> 1;
-        OP_NOP:
-          op_out_w = 'z;
         OP_HLT:
           op_out_w = 'z;
         OP_JZ:

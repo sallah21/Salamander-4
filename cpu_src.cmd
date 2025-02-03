@@ -5,3 +5,4 @@
 ./rtl/OP_CODES.sv
 ./rtl/PC.sv
 ./rtl/PROG_MEM.sv
+./rtl/DATA_MEM.sv

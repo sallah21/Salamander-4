@@ -18,10 +18,9 @@ module PC
   // Internal counter value
   reg [SIZE-1:0] cnt_r;
   reg max_size_reached_r;
-  reg [SIZE-1:0] inc_val_r;
 
   localparam SIZEMINONE = SIZE - 1;
-  localparam [SIZE-1:0] MAX_VAL = (2**SIZE) -1;
+  localparam [SIZE-1:0] MAX_VAL = (2**SIZE) - 1;
 
   always @(posedge clk or negedge rstn)
   begin
@@ -36,7 +35,7 @@ module PC
       begin
         if (cnt_r < MAX_VAL)
         begin
-          cnt_r <= cnt_r + inc_val_r;
+          cnt_r <= cnt_r + inc_val;
         end
         else
         begin

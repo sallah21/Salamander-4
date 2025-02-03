@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Mon Nov 18 12:14:45 2024
+[*] Mon Feb  3 08:31:15 2025
 [*]
 [dumpfile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/ALU.vcd"
-[dumpfile_mtime] "Mon Nov 18 12:09:29 2024"
-[dumpfile_size] 3245
+[dumpfile_mtime] "Mon Feb  3 08:30:46 2025"
+[dumpfile_size] 4822
 [savefile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/ALU_TB.gtkw"
-[timestart] 16700
-[size] 1664 912
-[pos] 7 7
-*-17.000000 536400 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[timestart] 0
+[size] 1904 942
+[pos] 1688 15
+*-18.000000 45000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [markername] AA
 [markername] BB
 [markername] CC
@@ -40,14 +40,14 @@
 [sst_width] 253
 [signals_width] 177
 [sst_expanded] 1
-[sst_vpaned_height] 268
+[sst_vpaned_height] 277
 @28
 ALU_TB.clk
 ALU_TB.rstn
 ALU_TB.CE
 ALU_TB.DUT.CE
-@25
-ALU_TB.DUT.OP_CODE[2:0]
+@23
+ALU_TB.DUT.OP_CODE[3:0]
 @28
 ALU_TB.DUT.left_operand[7:0]
 ALU_TB.DUT.right_operand[7:0]
