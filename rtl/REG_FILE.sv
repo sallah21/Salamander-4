@@ -6,8 +6,8 @@
 module REG_FILE (
     input CLK,
     input RSTN,
-    input [1:0] ADDR,
-    input [3:0] CE,
+    input [3:0] ADDR,
+    input CE,
     input [7:0] DATA_IN,
     output [7:0] DATA_OUT
   );
@@ -22,16 +22,11 @@ module REG_FILE (
       end
     else
     begin
-      for (int i = 0; i < 4; i++)
-      begin
-        if (CE[i])
-        begin
-          DATA_r[i] <= DATA_IN;
-        end
+      if (CE)
+        DATA_r[ADDR] <= DATA_IN;
       end
       DATA_OUT_r <= DATA_r[ADDR];
     end
 
-  end
   assign DATA_OUT = DATA_OUT_r;
 endmodule

@@ -4,7 +4,7 @@ module CPU_toplevel_tb;
 
    // Parameters
    localparam SIZE = 8;
-   localparam DATA_SIZE = 6;
+   localparam DATA_SIZE = 16;
    localparam ADDR_SIZE = 5;
    localparam CLK_PERIOD = 10;
 
@@ -12,6 +12,7 @@ module CPU_toplevel_tb;
    reg clk;
    reg rstn;
    reg W;
+   reg OVERWRITE=0;
    reg [DATA_SIZE-1:0] DATA_WR;
    reg [ADDR_SIZE-1:0] ADDR;
    
@@ -25,8 +26,9 @@ module CPU_toplevel_tb;
        .clk(clk),
        .rstn(rstn),
        .W(W),
+       .OVERWRITE(OVERWRITE),
        .ADDR(ADDR),
-       .DATA_IN(DATA_WR),
+       .DATA_WR(DATA_WR)
    );
 
    // Clock Generation
@@ -37,22 +39,48 @@ module CPU_toplevel_tb;
        #(CLK_PERIOD / 2) clk = ~clk;
    end
 
-   // Write to memory
-   function void write_memory(input [ADDR_SIZE-1:0] addr, input [DATA_SIZE-1:0] data);  
-     begin
-       DUT.memory[addr] = data;
-     end
+   // Generate memory content
+   function [DATA_SIZE-1:0] generate_memory_content ([3:0] right_operand, [3:0] left_operand, [3:0] mem_op, [3:0] op_code);
+    begin
+      logic [DATA_SIZE-1:0] mem_content;
+      mem_content = {
+        op_code,
+        mem_op,
+        left_operand,
+        right_operand
+      };
+      return mem_content;
+    end 
    endfunction
 
    // Initialize memory
-   function void init_memory();
+   task initialize_memory;
+     integer i;  
      begin
-       write_memory(0, 6'b000000);
-       write_memory(1, 6'b000001);
-       write_memory(2, 6'b000010);
-       write_memory(3, 6'b000011);
+       i = 0;    
+       @(posedge clk);
+       W = 1'b1;
+       @(posedge clk);
+       OVERWRITE = 1'b1;
+       $display("Initializing memory");
+       ADDR = i;
+       DATA_WR = generate_memory_content(4'h2, 4'h1, 4'b0000, OP_INC);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       DATA_WR = generate_memory_content(4'h3, 4'h2, 4'b0000, OP_ADD);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       DATA_WR = generate_memory_content(4'd0, 4'h1, REG_TO_REG, OP_ST);
+       @(posedge clk);
+       W = 1'b0;
+       OVERWRITE = 1'b0;
+       $display("Memory initialization completed");
      end
-   endfunction
+   endtask
 
    // Reset Process
    initial
@@ -94,7 +122,7 @@ module CPU_toplevel_tb;
    begin
      // Wait for reset to complete
      @(posedge rstn);
-     
+     initialize_memory();
      // Wait a few clock cycles to ensure stable state
      repeat(5) @(posedge clk);
      $display("System stabilized after reset at %0t ns", $time);
@@ -109,6 +137,9 @@ module CPU_toplevel_tb;
      
      // Add delay for observation
      #100;
+
+    $display("Test Phase 2 completed at %0t ns", $time);
+    
 
      // Finish Simulation
      $display("Testbench completed at %0t ns", $time);

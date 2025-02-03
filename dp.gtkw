@@ -1,0 +1,85 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Mon Feb  3 18:04:16 2025
+[*]
+[dumpfile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/wave.vcd"
+[dumpfile_mtime] "Mon Feb  3 18:03:34 2025"
+[dumpfile_size] 8549
+[savefile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/dp.gtkw"
+[timestart] 0
+[size] 1904 942
+[pos] 1688 39
+*-16.256626 235000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
+[treeopen] CPU_toplevel_tb.
+[treeopen] CPU_toplevel_tb.DUT.
+[sst_width] 240
+[signals_width] 354
+[sst_expanded] 1
+[sst_vpaned_height] 278
+@22
+CPU_toplevel_tb.DUT.PC_inst.cnt_val[4:0]
+@28
+CPU_toplevel_tb.DUT.PC_inst.inc
+@200
+-MEM
+@22
+CPU_toplevel_tb.DUT.PROG_MEM_inst.ADDR[4:0]
+@28
+CPU_toplevel_tb.DUT.PROG_MEM_inst.W
+@200
+-ID
+@28
+CPU_toplevel_tb.DUT.ID_inst.ID_CE
+@22
+CPU_toplevel_tb.DUT.ID_inst.OP_CODE[3:0]
+CPU_toplevel_tb.DUT.ID_inst.MEM_OP[3:0]
+CPU_toplevel_tb.DUT.ID_inst.LEFT_OPERAND[3:0]
+@23
+CPU_toplevel_tb.DUT.ID_inst.RIGHT_OPERAND[3:0]
+@200
+-ALU
+@28
+CPU_toplevel_tb.DUT.ALU_inst.CE
+CPU_toplevel_tb.DUT.ALU_inst.carry_in
+@22
+CPU_toplevel_tb.DUT.ALU_inst.OP_CODE[3:0]
+CPU_toplevel_tb.DUT.ALU_inst.left_operand[7:0]
+CPU_toplevel_tb.DUT.ALU_inst.right_operand[7:0]
+CPU_toplevel_tb.DUT.ALU_inst.op_out[7:0]
+@28
+CPU_toplevel_tb.DUT.ALU_inst.carry_out
+@200
+-ACC
+@28
+CPU_toplevel_tb.DUT.ACU_inst.CE
+@22
+CPU_toplevel_tb.DUT.ACU_inst.in_val[7:0]
+CPU_toplevel_tb.DUT.ACU_inst.out_val[7:0]
+[pattern_trace] 1
+[pattern_trace] 0

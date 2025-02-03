@@ -4,8 +4,8 @@
 */
 
 module PROG_MEM #(
-    parameter DATA_SIZE = 6,
-    parameter ADDR_SIZE = 5
+    parameter DATA_SIZE = 16,
+    parameter ADDR_SIZE = 4
   ) (
     input clk,
     input rstn,

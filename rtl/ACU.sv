@@ -22,13 +22,13 @@ module ACU
   begin
     if (!rstn)
     begin
-      int_val_r <= {SIZE{1'bz}};
+      int_val_r <= {SIZE{1'b0}};
     end
     else
     begin
       if (CE)
       begin
-        int_val_r <= in_val;
+          int_val_r <= in_val;
       end
     end
   end
