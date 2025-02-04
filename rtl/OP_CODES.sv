@@ -7,7 +7,7 @@ typedef enum logic [3:0]{
     // Arithmetic operations
     OP_ADD  = 4'b0000, // Add operation
     OP_SUB  = 4'b0001, // Subtract operation
-OP_LD   = 4'b0010, // Load operation TODO: Not implemented
+    OP_LD   = 4'b0010, // Load operation TODO: Not implemented
     OP_ST   = 4'b0011, // Store operation
     OP_INC  = 4'b0100, // Increment operation
     OP_DEC  = 4'b0101, // Decrement operation
@@ -23,11 +23,14 @@ OP_LD   = 4'b0010, // Load operation TODO: Not implemented
     OP_JZ   = 4'b1100, // Jump if zero
     OP_JNZ  = 4'b1101, // Jump if not zero
     // Special operations
-    OP_HLT  = 4'b1110  // Halt operation
+    OP_HLT  = 4'b1110, // Halt operation
+    OP_NOP  = 4'b1111  // No operation
 } OPERATION_CODE;
 
 typedef enum logic [3:0] { 
     NONE       = 4'b0000, // Default value
+    OP_REG     = 4'b0001, // Operation on register
+    OP_MEM     = 4'b0010, // Operation on memory
     REG_TO_REG = 4'b0100, // R -> R
     REG_TO_MEM = 4'b0101, // R -> M
     MEM_TO_REG = 4'b0110, // M -> R

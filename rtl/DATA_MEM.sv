@@ -12,13 +12,17 @@ module DATA_MEM #(
 );
 
     // Internal memory
-    reg [DATA_SIZE-1:0] mem_r[2**ADDR_SIZE-1:0];
+    localparam MEM_SIZE = 2**ADDR_SIZE;
+    reg [DATA_SIZE-1:0] mem_r[MEM_SIZE-1:0];
 
     always @(posedge clk)
     begin
         if (!rstn)
         begin
-            mem_r[ADDR] <= 0;
+            for (int i = 0; i < MEM_SIZE; i++)
+            begin
+                mem_r[i] <= i;
+            end
         end
         else
         begin
