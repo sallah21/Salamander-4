@@ -18,7 +18,7 @@ module REG_FILE (
     if (!RSTN)
       for (int i = 0; i < 4; i++)
       begin
-        DATA_r[i] <= 8'b0; 
+        DATA_r[i] <= i+2; 
       end
     else
     begin
