@@ -53,16 +53,16 @@ module ALU #(
         OP_SHR:
           op_out_w = left_operand >> 1;
         OP_HLT:
-          op_out_w = 'z;
+          op_out_w = 'x;
         OP_JZ:
           if (zero_flag == 0)
-            op_out_w = 'z;
+            op_out_w = 'x;
         OP_JNZ:
           if (zero_flag != 0)
-            op_out_w = 'z;
+            op_out_w = 'x;
         // TODO: implement jump operations
         default:
-          op_out_w = 'z;
+          op_out_w = 'x;
       endcase
     end
   end
