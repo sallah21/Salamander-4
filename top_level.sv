@@ -9,7 +9,8 @@ typedef enum logic [1:0] {
 module top_level #(
     parameter SIZE = 8,
     parameter DATA_SIZE = 8,
-    parameter ADDR_SIZE = 4
+    parameter ADDR_SIZE = 4,
+    parameter STACK_SIZE = 8
   ) (
     input clk,
     input rstn,
@@ -25,48 +26,7 @@ module top_level #(
   // Processor State Descriptions
   // ===============================================
   //
-  // FETCH:
-  // -----------------------------------------------
-  // Description: This state fetches the next instruction from memory.
-  //
-  // Entry Conditions:
-  //   - Triggered after a reset or the completion of the previous instruction.
-  //
-  // Actions Taken:
-  //   - Loads the instruction pointed to by the program counter (PC) into the instruction register (IR).
-  //   - Increments the program counter (PC) to point to the next instruction.
-  //
-  // Exit Conditions:
-  //   - Once the instruction is fetched and stored in IR.
-  //
-  // Next State:
-  //   - DECODE
-  //
-  // Additional Notes:
-  //   - This state is critical for keeping the instruction pipeline flowing.
-  // ===============================================
-  //
-  // DECODE:
-  // -----------------------------------------------
-  // Description: This state decodes the fetched instruction and prepares for execution.
-  //
-  // Entry Conditions:
-  //   - Triggered upon completion of the FETCH state.
-  //
-  // Actions Taken:
-  //   - Decodes the opcode and operands in IR.
-  //   - Sets up control signals for the next operation based on the opcode.
-  //
-  // Exit Conditions:
-  //   - Once the instruction is decoded and control signals are prepared.
-  //
-  // Next State:
-  //   - EXEC
-  //
-  // Additional Notes:
-  //   - Control signals set here will guide the ALU or memory access in the EXEC phase.
-  // ===============================================
-
+  
   always @( posedge clk or negedge rstn )
   begin
     if (!rstn)
@@ -74,6 +34,7 @@ module top_level #(
       curr_state <= FETCH;
       next_state <= FETCH;
       PC_inc_r <= 1'b0;
+      cnt_overwrite_r <= 1'b0;
     end
     else
     begin
@@ -96,7 +57,17 @@ module top_level #(
         begin
           PC_inc_r <= 1'b0;
           ID_CE_r <= 1'b0;
-          if (MEM_OP_r == NONE)
+          if (OP_CODE_r == OP_JMP)
+          begin
+            cnt_new_val_r <= LEFT_OPERAND_r ;
+            jmp_occur_r <= 1'b1;
+          end 
+          else if (OP_CODE_r == OP_RTN)
+          begin
+            cnt_new_val_r <= PC_STACK_ADDR_r + 1; // Move to next instruction 
+            rnt_occur_r <= 1'b1;
+          end
+          else if (MEM_OP_r == NONE)
           begin
             ALU_CE_r <= 1'b0;
             ALU_left_operand_r <= LEFT_OPERAND_r;
@@ -179,6 +150,10 @@ module top_level #(
         end
         EXEC:
         begin
+          if (OP_CODE_r == OP_JMP || OP_CODE_r == OP_RTN)
+          begin
+            cnt_overwrite_r <= 1'b1;
+          end
           if (OP_CODE_r == OP_NOP)
           begin
             ALU_CE_r <= 1'b0;
@@ -270,9 +245,25 @@ module top_level #(
         end
         WRITE_BACK:
         begin
-          PC_inc_r <= 1'b1;  
           next_state <= FETCH;
-          if (MEM_OP_r == NONE)
+          if (jmp_occur_r)
+          begin
+            PC_inc_r <= 1'b0;  
+            jmp_occur_r <= 1'b0;
+          end
+          else if (rnt_occur_r)
+          begin
+            PC_inc_r <= 1'b0;  
+            rnt_occur_r <= 1'b0;
+          end
+          else begin
+            PC_inc_r <= 1'b1;  
+          end 
+          if (OP_CODE_r == OP_JMP || OP_CODE_r == OP_RTN)
+          begin
+            cnt_overwrite_r <= 1'b0;
+          end
+          else if (MEM_OP_r == NONE)
           begin
             ALU_CE_r <= 1'b1;
             ACC_CE_r <= 1'b1;
@@ -341,19 +332,19 @@ module top_level #(
   ///////////////////////////////////////////////////////////////////////////////////////
   // Instantions
   ///////////////////////////////////////////////////////////////////////////////////////
-
-  logic unused_signals_w;
-
+  reg jmp_occur_r = 0; // There was a jump instruction
+  reg rnt_occur_r = 0; // There was a return instruction
   ///////////////////////////////////////////////////////////////////////////////////////
   // Program Counter logic
   ///////////////////////////////////////////////////////////////////////////////////////
 
   localparam PC_SIZE = 5;
   reg [PC_SIZE-1:0] PC_ADDR_r;
-  reg [PC_SIZE-1:0] PC_inc_valr=5'b00001;
   reg max_size_reached_r;
   logic PC_inc_w;
   assign PC_inc_w = PC_inc_r && (curr_state == WRITE_BACK);
+  reg [PC_SIZE-1:0] cnt_new_val_r;
+  reg cnt_overwrite_r;
 
   PC  #(
         .SIZE(5)
@@ -363,7 +354,8 @@ module top_level #(
         .clk(clk),
         .rstn(rstn),
         .inc(PC_inc_w),
-        .inc_val(PC_inc_valr),
+        .cnt_overwrite(cnt_overwrite_r),
+        .cnt_new_val(cnt_new_val_r),
         .cnt_val(PC_ADDR_r), // Memory address
         .max_size_reached(max_size_reached_r)
       );
@@ -397,6 +389,7 @@ module top_level #(
   reg [DATA_SIZE-1:0] DATA_MEM_WR_r;
   reg [ADDR_SIZE-1:0] DATA_MEM_ADDR_r;
   reg [DATA_SIZE-1:0] DATA_MEM_RD_r;
+
   DATA_MEM #(
              .DATA_SIZE(DATA_SIZE),
              .ADDR_SIZE(ADDR_SIZE)
@@ -408,7 +401,7 @@ module top_level #(
              .DATA_WR(DATA_MEM_WR_r),
              .ADDR(DATA_MEM_ADDR_r),
              .DATA_RD(DATA_MEM_RD_r)
-  );
+   );
 
   ///////////////////////////////////////////////////////////////////////////////////////
   // Instruction Decoder logic
@@ -442,8 +435,7 @@ module top_level #(
   logic [SIZE-1:0] ALU_op_out_w;
   reg [7:0] ALU_left_operand_r;
   reg [7:0] ALU_right_operand_r;
-  // assign ALU_left_operand_w = ALU_out_val_w;
-  // assign ALU_right_operand_w = REG_FILE_DATA_OUT_r;
+
   ALU #(
         .SIZE(SIZE)
       ) ALU_inst
@@ -494,5 +486,23 @@ module top_level #(
               .DATA_IN(REG_FILE_DATA_IN_r),
               .DATA_OUT (REG_FILE_DATA_OUT_r)
             );
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Stack  logic
+  ///////////////////////////////////////////////////////////////////////////////////////
 
+  reg [ADDR_SIZE-1:0] PC_STACK_ADDR_r;
+  wire PC_STACK_W_w = (curr_state == EXEC && next_state == EXEC && OP_CODE_r == OP_JMP) ? 1'b1 : 1'b0;
+  wire PC_STACK_R_w = (curr_state == DECODE && next_state == DECODE && OP_CODE_r == OP_RTN) ? 1'b1 : 1'b0;
+
+  STACK #(
+           .DATA_SIZE(DATA_SIZE),
+           .STACK_SIZE(STACK_SIZE)
+    ) STACK_inst (
+           .CLK(clk),
+           .RSTN(rstn),
+           .W(PC_STACK_W_w),
+           .R(PC_STACK_R_w),
+           .DATA_WR(PC_ADDR_r),
+           .DATA_RD(PC_STACK_ADDR_r)
+    );
 endmodule

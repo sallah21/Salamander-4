@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module DATA_MEM #(
     parameter DATA_SIZE = 8,
     parameter ADDR_SIZE = 5

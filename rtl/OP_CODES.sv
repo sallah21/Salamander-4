@@ -20,8 +20,8 @@ typedef enum logic [3:0]{
     OP_SHL  = 4'b1010, // Shift left operation
     OP_SHR  = 4'b1011, // Shift right operation
     // Jump operations
-    OP_JZ   = 4'b1100, // Jump if zero
-    OP_JNZ  = 4'b1101, // Jump if not zero
+    OP_JMP   = 4'b1100, // Jump 
+    OP_RTN   = 4'b1101, // Return
     // Special operations
     OP_HLT  = 4'b1110, // Halt operation
     OP_NOP  = 4'b1111  // No operation

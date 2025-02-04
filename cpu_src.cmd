@@ -6,3 +6,4 @@
 ./rtl/PC.sv
 ./rtl/PROG_MEM.sv
 ./rtl/DATA_MEM.sv
+./rtl/STACK.sv

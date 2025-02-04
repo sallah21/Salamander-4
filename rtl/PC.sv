@@ -11,7 +11,8 @@ module PC
      input clk,
      input inc,
      input rstn,
-     input [SIZE-1:0] inc_val,
+     input cnt_overwrite,
+     input [SIZE-1:0] cnt_new_val,
      output [SIZE-1:0] cnt_val,
      output max_size_reached
    );
@@ -31,11 +32,17 @@ module PC
     end
     else
     begin
+
+      if (cnt_overwrite && (cnt_new_val < MAX_VAL))
+      begin
+        cnt_r <= cnt_new_val;
+        max_size_reached_r <= 1'b0;
+      end
       if (inc)
       begin
         if (cnt_r < MAX_VAL)
         begin
-          cnt_r <= cnt_r + inc_val;
+          cnt_r <= cnt_r + 1'b1;
         end
         else
         begin
@@ -79,5 +86,18 @@ module PC
   assert max_size_reached_asserted_correctly else
            $display("Max size reached not asserted correctly at %0t ns", $time);
 
+
+  //////////////////////////////////////////////////////////////////////////////////////////
+  // Asstertion 3: Counter overwrite value should not exceed max size
+  //////////////////////////////////////////////////////////////////////////////////////////
+  property counter_overwrite_value_should_not_exceed_max_size;
+    @ (posedge clk or negedge rstn)
+    $changed(overwrite_val)
+     |-> 
+     (overwrite_val < MAX_VAL);  
+  endproperty
+
+  assert counter_overwrite_value_should_not_exceed_max_size else
+           $display("Counter overwrite value exceeded MAX_VAL at %0t ns", $time);
   `endif // FORMAL
 endmodule
