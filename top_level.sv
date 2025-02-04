@@ -102,6 +102,44 @@ module top_level #(
             ALU_left_operand_r <= LEFT_OPERAND_r;
             ALU_right_operand_r <= RIGHT_OPERAND_r; 
           end
+          else if (OP_CODE_r == OP_ST)
+          begin
+            case (MEM_OP_r)
+            OP_REG:
+            begin
+              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b0;
+            end 
+            OP_MEM:
+            begin
+              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
+              W_data_mem_r <= 1'b0;
+            end
+            default:
+            begin
+              // Store operand directly to ACU through ALU
+              ALU_left_operand_r <= LEFT_OPERAND_r;
+              ALU_right_operand_r <= 'x; 
+              ACC_CE_r <= 1'b0;
+              ALU_CE_r <= 1'b0;
+            end
+            endcase
+          end
+          else if (OP_CODE_r == OP_LD)
+          begin
+            case (MEM_OP_r)
+            OP_REG:
+            begin
+              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b0;
+            end
+            OP_MEM:
+            begin
+              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
+              W_data_mem_r <= 1'b0;
+            end
+            endcase
+          end 
           else 
           begin
             case (MEM_OP_r)
@@ -133,20 +171,62 @@ module top_level #(
             default:
             begin
               ALU_left_operand_r <= ACU_out_val_w;
-              ALU_right_operand_r <= REG_FILE_DATA_OUT_r; // TODO: imo not default but stays for now 
+              ALU_right_operand_r <= REG_FILE_DATA_OUT_r; 
             end
             endcase  
           end
-
           next_state <= EXEC;
         end
         EXEC:
         begin
-          if (MEM_OP_r == NONE)
+          if (OP_CODE_r == OP_NOP)
+          begin
+            ALU_CE_r <= 1'b0;
+            ACC_CE_r <= 1'b0;
+            REG_FILE_CE_r <= 1'b0;
+            W_data_mem_r <= 1'b0;
+          end 
+          else if (MEM_OP_r == NONE)
           begin
             ALU_CE_r <= 1'b1;
             ACC_CE_r <= 1'b0;
           end 
+          else if (OP_CODE_r == OP_ST)
+          begin
+            case (MEM_OP_r)
+            OP_REG:
+            begin
+              REG_FILE_DATA_IN_r <= LEFT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b1;
+            end 
+            OP_MEM:
+            begin
+              DATA_MEM_WR_r <= LEFT_OPERAND_r;
+              W_data_mem_r <= 1'b1;
+            end
+            default:
+            begin
+              // Store operand directly to ACU through ALU
+              ALU_CE_r <= 1'b1;
+              ACC_CE_r <= 1'b1;
+            end
+            endcase
+          end 
+          else if (OP_CODE_r == OP_LD)
+            begin 
+              ALU_CE_r <= 1'b1;
+              ACC_CE_r <= 1'b1;
+              case (MEM_OP_r)
+              OP_REG:
+              begin
+                ALU_right_operand_r <= REG_FILE_DATA_OUT_r;
+              end
+              OP_MEM:
+              begin
+                ALU_right_operand_r <= DATA_MEM_RD_r;
+              end
+              endcase
+            end 
           else
           begin
             case (MEM_OP_r)
@@ -197,6 +277,30 @@ module top_level #(
             ALU_CE_r <= 1'b1;
             ACC_CE_r <= 1'b1;
           end
+          else if (OP_CODE_r == OP_ST)
+          begin
+            case (MEM_OP_r)
+            OP_REG:
+            begin
+              REG_FILE_CE_r <= 1'b0;
+            end 
+            OP_MEM:
+            begin
+              W_data_mem_r <= 1'b0;
+            end
+            default:
+            begin
+              // Store operand directly to ACU through ALU
+              ALU_CE_r <= 1'b0;
+              ACC_CE_r <= 1'b0;
+            end
+            endcase
+          end
+          else if (OP_CODE_r == OP_LD)
+          begin
+            ACC_CE_r <= 1'b0;
+            ALU_CE_r <= 1'b0;
+          end
           else
           begin
             case (MEM_OP_r)
@@ -222,7 +326,6 @@ module top_level #(
             end
           endcase
           end 
-
         end
         default:
         begin
@@ -294,7 +397,7 @@ module top_level #(
   reg [DATA_SIZE-1:0] DATA_MEM_WR_r;
   reg [ADDR_SIZE-1:0] DATA_MEM_ADDR_r;
   reg [DATA_SIZE-1:0] DATA_MEM_RD_r;
-DATA_MEM #(
+  DATA_MEM #(
              .DATA_SIZE(DATA_SIZE),
              .ADDR_SIZE(ADDR_SIZE)
            ) DATA_MEM_inst
@@ -305,7 +408,7 @@ DATA_MEM #(
              .DATA_WR(DATA_MEM_WR_r),
              .ADDR(DATA_MEM_ADDR_r),
              .DATA_RD(DATA_MEM_RD_r)
-);
+  );
 
   ///////////////////////////////////////////////////////////////////////////////////////
   // Instruction Decoder logic

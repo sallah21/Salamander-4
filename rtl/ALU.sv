@@ -18,7 +18,7 @@ module ALU #(
 
   logic carry_out_w;
   logic [SIZE-1:0] op_out_w;
-  logic zero_flag_w;
+  logic zero_flag_r;
 
   always @(*)
   begin
@@ -27,11 +27,19 @@ module ALU #(
 
     if (CE)
     begin
+      if (OP_CODE != OP_ADD || OP_SUB)
+      begin
+        zero_flag_r = 1'b0;
+      end 
       case (OP_CODE)
         OP_ADD:
           {carry_out_w, op_out_w} = left_operand + right_operand + carry_in;
         OP_SUB:
           {carry_out_w, op_out_w} = left_operand - right_operand + carry_in;
+          if (op_out_w == 0)
+            zero_flag_r = 1;
+          else
+            zero_flag_r = 0;
         OP_AND:
           op_out_w = left_operand & right_operand;
         OP_OR:
@@ -60,7 +68,8 @@ module ALU #(
         OP_JNZ:
           if (zero_flag != 0)
             op_out_w = 'x;
-        // TODO: implement jump operations
+        OP_NOP:
+          op_out_w = 'x;
         default:
           op_out_w = 'x;
       endcase
@@ -69,7 +78,7 @@ module ALU #(
 
   assign carry_out = carry_out_w;
   assign op_out = op_out_w;
-  assign zero_flag = zero_flag_w;
+  assign zero_flag = zero_flag_r;
 
 `ifdef FORMAL
 

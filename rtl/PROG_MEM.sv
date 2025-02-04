@@ -24,7 +24,7 @@ module PROG_MEM #(
     begin
       for (int i = 0; i < 2**ADDR_SIZE; i++)
       begin
-        int_mem_r[i] <= {DATA_SIZE{1'b0}};
+        int_mem_r[i] <= {DATA_SIZE{1'bx}};
       end
     end
     else if (W)

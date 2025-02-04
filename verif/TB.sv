@@ -40,7 +40,7 @@ module CPU_toplevel_tb;
    end
 
    // Generate memory content
-   function [DATA_SIZE-1:0] generate_memory_content ([3:0] right_operand, [3:0] left_operand, [3:0] mem_op, [3:0] op_code);
+   function [DATA_SIZE-1:0] generate_memory_content ( [3:0] left_operand, [3:0] right_operand, [3:0] mem_op, [3:0] op_code);
     begin
       logic [DATA_SIZE-1:0] mem_content;
       mem_content = {
@@ -64,22 +64,60 @@ module CPU_toplevel_tb;
        OVERWRITE = 1'b1;
        $display("Initializing memory");
        ADDR = i;
-       DATA_WR = generate_memory_content(4'h2, 4'h1, 4'b0000, OP_INC);
+       // Instruction 0
+       DATA_WR = generate_memory_content(4'h2, 4'h1, NONE, OP_INC);
        @(posedge clk);
        i=i+1;
        ADDR = i;
        @(posedge clk);
-       DATA_WR = generate_memory_content(4'h3, 4'h2, 4'b0000, OP_ADD);
+       // Instruction 1
+       DATA_WR = generate_memory_content(4'h3, 4'h2, NONE, OP_ADD);
        @(posedge clk);
        i=i+1;
        ADDR = i;
        @(posedge clk);
-       DATA_WR = generate_memory_content(4'd0, 4'h1, REG_TO_REG, OP_ST);
+       // Instruction 2
+       DATA_WR = generate_memory_content(4'd0, 4'h1, REG_TO_REG, OP_NOP);
        @(posedge clk);
        i=i+1;
        ADDR = i;
        @(posedge clk);
-      //  DATA_WR = generate_memory_content(4'd0, 4'h1, REG_TO_REG, OP_ST);
+       // Instruction 3
+       DATA_WR = generate_memory_content(4'd2, 4'h3, REG_TO_REG, OP_NOP);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 4
+       DATA_WR = generate_memory_content(4'd0, 4'h2, MEM_TO_REG, OP_NOP);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 5
+       DATA_WR = generate_memory_content(4'd0, 4'h1, REG_TO_REG, OP_NOP);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 6
+       DATA_WR = generate_memory_content(4'd6, 4'h0, OP_REG, OP_ST);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 7
+       DATA_WR = generate_memory_content(4'd7, 4'h0, NONE, OP_ST);
+       @(posedge clk);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 8
+       DATA_WR = generate_memory_content(4'd7, 4'h0, OP_REG, OP_LD);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
        @(posedge clk);
        W = 1'b0;
        OVERWRITE = 1'b0;
@@ -141,7 +179,7 @@ module CPU_toplevel_tb;
      repeat(20) @(posedge clk);
      
      // Add delay for observation
-     #100;
+     #1000;
 
     $display("Test Phase 2 completed at %0t ns", $time);
     
