@@ -33,45 +33,81 @@ module ALU #(
       end 
       case (OP_CODE)
         OP_ADD:
-          {carry_out_w, op_out_w} = left_operand + right_operand + carry_in;
+        begin
+          {carry_out_w, op_out_w} <= left_operand + right_operand + carry_in;
+        end 
         OP_SUB:
-          {carry_out_w, op_out_w} = left_operand - right_operand + carry_in;
-          if (op_out_w == 0)
-            zero_flag_r = 1;
-          else
-            zero_flag_r = 0;
+        begin
+          {carry_out_w, op_out_w} <= left_operand - right_operand + carry_in;
+          // if (op_out_w == 0)
+          // begin
+          //   zero_flag_r <= 1;
+          // end
+          // else
+          // begin
+          //   zero_flag_r <= 0;
+          // end
+        end 
         OP_AND:
-          op_out_w = left_operand & right_operand;
+        begin
+          op_out_w <= left_operand & right_operand;
+        end 
         OP_OR:
-          op_out_w = left_operand | right_operand;
+        begin
+          op_out_w <= left_operand | right_operand;
+        end 
         OP_XOR:
-          op_out_w = left_operand ^ right_operand;
+        begin
+          op_out_w <= left_operand ^ right_operand;
+        end 
         OP_NOT:
-          op_out_w = ~left_operand;
+        begin
+          op_out_w <= ~left_operand;
+        end 
         OP_LD:
-          op_out_w = right_operand;
+        begin
+          op_out_w <= right_operand;
+        end
         OP_ST:
-          op_out_w = left_operand;
+        begin
+          op_out_w <= left_operand;
+        end
         OP_INC:
-          op_out_w = left_operand + {{(SIZE-1){1'b0}}, 1'b1};
+        begin
+          op_out_w <= left_operand + {{(SIZE-1){1'b0}}, 1'b1};
+        end 
         OP_DEC:
-          op_out_w = left_operand - {{(SIZE-1){1'b0}}, 1'b1};
+        begin
+          op_out_w <= left_operand - {{(SIZE-1){1'b0}}, 1'b1};
+        end 
         OP_SHL:
-          op_out_w = left_operand << 1;
+        begin
+          op_out_w <= left_operand << 1;
+        end 
         OP_SHR:
-          op_out_w = left_operand >> 1;
+        begin
+          op_out_w <= left_operand >> 1;
+        end 
         OP_HLT:
-          op_out_w = 'x;
-        OP_JZ:
-          if (zero_flag == 0)
-            op_out_w = 'x;
-        OP_JNZ:
-          if (zero_flag != 0)
-            op_out_w = 'x;
+        begin
+          op_out_w <= 'x;
+        end
+        OP_JMP:
+        begin
+          op_out_w <= 'x;
+        end
+        OP_RTN:
+        begin
+          op_out_w <= 'x;
+        end
         OP_NOP:
-          op_out_w = 'x;
+        begin
+          op_out_w <= 'x;
+        end 
         default:
-          op_out_w = 'x;
+        begin
+          op_out_w <= 'x;
+        end
       endcase
     end
   end

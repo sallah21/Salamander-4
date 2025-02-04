@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Tue Feb  4 13:33:57 2025
+[*] Tue Feb  4 17:50:00 2025
 [*]
 [dumpfile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/wave.vcd"
-[dumpfile_mtime] "Tue Feb  4 13:15:09 2025"
-[dumpfile_size] 13734
+[dumpfile_mtime] "Tue Feb  4 17:49:15 2025"
+[dumpfile_size] 17826
 [savefile] "/Users/salsamon/ASIC/Projektowanie_mikroprocesorow/windsurf/Salamander-4/dp.gtkw"
 [timestart] 0
 [size] 1904 942
 [pos] 1688 61
-*-17.869877 285000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+*-17.977793 1046000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [markername] AA
 [markername] BB
 [markername] CC
@@ -45,15 +45,20 @@
 @24
 CPU_toplevel_tb.DUT.curr_state[1:0]
 CPU_toplevel_tb.DUT.next_state[1:0]
-@25
 CPU_toplevel_tb.DUT.PC_inst.cnt_val[4:0]
 @28
 CPU_toplevel_tb.DUT.PC_inst.inc
+CPU_toplevel_tb.DUT.jmp_occur_r
+CPU_toplevel_tb.DUT.rnt_occur_r
+@24
+CPU_toplevel_tb.DUT.PC_inst.cnt_new_val[4:0]
+@28
+CPU_toplevel_tb.DUT.PC_inst.cnt_overwrite
 @200
 -MEM
 @28
 CPU_toplevel_tb.DUT.max_size_reached_r
-@22
+@25
 CPU_toplevel_tb.DUT.PROG_MEM_inst.ADDR[4:0]
 @28
 CPU_toplevel_tb.DUT.PROG_MEM_inst.W
@@ -102,6 +107,17 @@ CPU_toplevel_tb.DUT.REG_FILE_inst.DATA_OUT[7:0]
 CPU_toplevel_tb.DUT.DATA_MEM_inst.ADDR[4:0]
 CPU_toplevel_tb.DUT.DATA_MEM_inst.DATA_RD[15:0]
 CPU_toplevel_tb.DUT.DATA_MEM_inst.DATA_WR[15:0]
+@200
+-STACK
+@22
+CPU_toplevel_tb.DUT.STACK_inst.STACK_ADDR_r[3:0]
+@28
+CPU_toplevel_tb.DUT.STACK_inst.W
+@22
+CPU_toplevel_tb.DUT.STACK_inst.DATA_WR[15:0]
+CPU_toplevel_tb.DUT.STACK_inst.DATA_RD[15:0]
+@28
+CPU_toplevel_tb.DUT.STACK_inst.R
 @200
 -INIT MEM CONTENT
 @22

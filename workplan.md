@@ -2,14 +2,6 @@
 
 ## Instruction exansion
 
-Jump instructions:
-
-- [ ] Jump not zero
-- [ ] Jump always
-- [ ] Jump zero
-
-  
-Total number of jump instructions : 3
 
 Arithmetic instructions:
 
@@ -40,11 +32,11 @@ Shift instructions:
 Total number of shift instructions : 2
 
 Control instructions:
+- [x] Jump
+- [x] Return
 
-- [ ] Return
 
-
-Total number of control instructions : 1
+Total number of control instructions : 2
 
 Special instructions:
 

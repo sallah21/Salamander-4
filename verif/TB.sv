@@ -6,6 +6,7 @@ module CPU_toplevel_tb;
    localparam SIZE = 8;
    localparam DATA_SIZE = 16;
    localparam ADDR_SIZE = 5;
+   localparam STACK_SIZE = 4;
    localparam CLK_PERIOD = 10;
 
    // Signals
@@ -22,7 +23,9 @@ module CPU_toplevel_tb;
    // Instantiate the DUT
    top_level #(.SIZE(SIZE),
               .DATA_SIZE(DATA_SIZE),
-              .ADDR_SIZE(ADDR_SIZE)) DUT (
+              .ADDR_SIZE(ADDR_SIZE),
+              .STACK_SIZE(STACK_SIZE)
+              ) DUT (
        .clk(clk),
        .rstn(rstn),
        .W(W),
@@ -109,12 +112,41 @@ module CPU_toplevel_tb;
        // Instruction 7
        DATA_WR = generate_memory_content(4'd7, 4'h0, NONE, OP_ST);
        @(posedge clk);
-       @(posedge clk);
        i=i+1;
        ADDR = i;
        @(posedge clk);
        // Instruction 8
        DATA_WR = generate_memory_content(4'd7, 4'h0, OP_REG, OP_LD);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 9
+       DATA_WR = generate_memory_content(4'd11, 4'd11, NONE, OP_JMP);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 10
+       DATA_WR = generate_memory_content(4'h3, 4'h2, NONE, OP_ADD);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 11
+       DATA_WR = generate_memory_content(4'h3, 4'h2, NONE, OP_ADD);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 12
+       DATA_WR = generate_memory_content(4'h3, 4'h2, NONE, OP_SUB);
+       @(posedge clk);
+       i=i+1;
+       ADDR = i;
+       @(posedge clk);
+       // Instruction 13
+       DATA_WR = generate_memory_content(4'd0, 4'h0, OP_REG, OP_RTN);
        @(posedge clk);
        i=i+1;
        ADDR = i;
