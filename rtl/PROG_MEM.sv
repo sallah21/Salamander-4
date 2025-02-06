@@ -15,7 +15,7 @@ module PROG_MEM #(
     output [DATA_SIZE-1:0] DATA
   );
 
-  logic [DATA_SIZE-1:0] int_mem_r [2**ADDR_SIZE-1:0];
+  logic [DATA_SIZE-1:0] int_mem_r [0:2**ADDR_SIZE-1] /* synthesis preserve */;
 
   logic [DATA_SIZE-1:0] DATA_reg;
   always @(posedge clk or negedge rstn)

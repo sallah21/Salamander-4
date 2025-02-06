@@ -14,7 +14,7 @@ module DATA_MEM #(
 
     // Internal memory
     localparam MEM_SIZE = 2**ADDR_SIZE;
-    reg [DATA_SIZE-1:0] mem_r[MEM_SIZE-1:0];
+    reg [DATA_SIZE-1:0] mem_r[0:MEM_SIZE-1] /* synthesis preserve */;
 
     always @(posedge clk)
     begin

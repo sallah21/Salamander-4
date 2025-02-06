@@ -7,17 +7,30 @@ typedef enum logic [1:0] {
         } state_t;
 
 module top_level #(
-    parameter SIZE = 8,
+    parameter SIZE = 4,
     parameter DATA_SIZE = 8,
     parameter ADDR_SIZE = 4,
-    parameter STACK_SIZE = 8
+    parameter STACK_SIZE = 4
   ) (
     input clk,
     input rstn,
     input W,
-    input OVERWRITE,
     input [DATA_SIZE-1:0] DATA_WR,
-    input [ADDR_SIZE-1:0] ADDR
+    input [ADDR_SIZE-1:0] ADDR,
+    // Outputs for monitoring
+    output [ADDR_SIZE-1:0] PC_ADDR_out,
+    output [DATA_SIZE-1:0] OP_CODE_out,
+    output [DATA_SIZE-1:0] OP_MEM_OUT,
+    output [DATA_SIZE-1:0] LEFT_OPERAND_out,
+    output [DATA_SIZE-1:0] RIGHT_OPERAND_out,
+    output [DATA_SIZE-1:0] ACC_OUT,
+    output [DATA_SIZE-1:0] ALU_OUT,
+    output [DATA_SIZE-1:0] REG_FILE_OUT,
+    output [DATA_SIZE-1:0] DATA_MEM_OUT,
+    output [1:0] curr_state_out,
+    output [1:0] next_state_out,
+    output stack_full_out,
+    output stack_empty_out
   );
   state_t curr_state /* synthesis preserve */;
   state_t next_state /* synthesis preserve */;
@@ -332,19 +345,19 @@ module top_level #(
   ///////////////////////////////////////////////////////////////////////////////////////
   // Instantions
   ///////////////////////////////////////////////////////////////////////////////////////
-  reg jmp_occur_r = 0; // There was a jump instruction
-  reg rnt_occur_r = 0; // There was a return instruction
+  reg jmp_occur_r = 0 /* synthesis preserve */; // There was a jump instruction
+  reg rnt_occur_r = 0 /* synthesis preserve */; // There was a return instruction
   ///////////////////////////////////////////////////////////////////////////////////////
   // Program Counter logic
   ///////////////////////////////////////////////////////////////////////////////////////
 
-  localparam PC_SIZE = 5;
-  reg [PC_SIZE-1:0] PC_ADDR_r;
-  reg max_size_reached_r;
-  logic PC_inc_w;
+  localparam PC_SIZE = 4;
+  reg [PC_SIZE-1:0] PC_ADDR_r /* synthesis preserve */;
+  reg max_size_reached_r /* synthesis preserve */;
+  logic PC_inc_w /* synthesis preserve */;
   assign PC_inc_w = PC_inc_r && (curr_state == WRITE_BACK);
-  reg [PC_SIZE-1:0] cnt_new_val_r;
-  reg cnt_overwrite_r;
+  reg [PC_SIZE-1:0] cnt_new_val_r /* synthesis preserve */;
+  reg cnt_overwrite_r /* synthesis preserve */;
 
   PC  #(
         .SIZE(5)
@@ -363,10 +376,10 @@ module top_level #(
   ///////////////////////////////////////////////////////////////////////////////////////
   // Program Memory logic
   ///////////////////////////////////////////////////////////////////////////////////////
-  reg [DATA_SIZE-1:0] PROG_MEM_INSTRUCTION_r;
-  wire [ADDR_SIZE-1:0] PC_ADDR_w;
-  wire [DATA_SIZE-1:0] PROG_MEM_DATA_w;
-  assign PC_ADDR_w = (W) ? ADDR : PC_ADDR_r;
+  reg [DATA_SIZE-1:0] PROG_MEM_INSTRUCTION_r /* synthesis preserve */;
+  wire [ADDR_SIZE-1:0] PC_ADDR_w /* synthesis preserve */;
+  wire [DATA_SIZE-1:0] PROG_MEM_DATA_w /* synthesis preserve */;
+  assign PC_ADDR_w = (W) ? ADDR : PC_ADDR_r /* synthesis preserve */;
   PROG_MEM #(
              .DATA_SIZE(DATA_SIZE),
              .ADDR_SIZE(ADDR_SIZE)
@@ -385,10 +398,10 @@ module top_level #(
   // Data Memory logic
   ///////////////////////////////////////////////////////////////////////////////////////
 
-  reg W_data_mem_r;
-  reg [DATA_SIZE-1:0] DATA_MEM_WR_r;
-  reg [ADDR_SIZE-1:0] DATA_MEM_ADDR_r;
-  reg [DATA_SIZE-1:0] DATA_MEM_RD_r;
+  reg W_data_mem_r /* synthesis preserve */;
+  reg [DATA_SIZE-1:0] DATA_MEM_WR_r /* synthesis preserve */;
+  reg [ADDR_SIZE-1:0] DATA_MEM_ADDR_r /* synthesis preserve */;
+  reg [DATA_SIZE-1:0] DATA_MEM_RD_r /* synthesis preserve */;
 
   DATA_MEM #(
              .DATA_SIZE(DATA_SIZE),
@@ -407,14 +420,14 @@ module top_level #(
   // Instruction Decoder logic
   ///////////////////////////////////////////////////////////////////////////////////////
 
-  logic [15:0] INSTR_r;
+  logic [15:0] INSTR_r /* synthesis preserve */;
   assign INSTR_r = PROG_MEM_DATA_w;
   logic ID_CE_r;
-  logic [3:0] OP_CODE_r;
-  logic [3:0] MEM_OP_r;
-  logic [7:0] OPERAND_r;
-  logic [3:0] LEFT_OPERAND_r;
-  logic [3:0] RIGHT_OPERAND_r;
+  logic [SIZE-1:0] OP_CODE_r /* synthesis preserve */;
+  logic [SIZE-1:0] MEM_OP_r /* synthesis preserve */;
+  logic [DATA_SIZE-1:0] OPERAND_r /* synthesis preserve */;
+  logic [SIZE-1:0] LEFT_OPERAND_r /* synthesis preserve */;
+  logic [SIZE-1:0] RIGHT_OPERAND_r /* synthesis preserve */;
   ID  ID_inst
       (
         .INSTR(INSTR_r),
@@ -432,9 +445,9 @@ module top_level #(
   reg carry_out_r;
   reg carry_in = 1'b0;
   reg ALU_CE_r;
-  logic [SIZE-1:0] ALU_op_out_w;
-  reg [7:0] ALU_left_operand_r;
-  reg [7:0] ALU_right_operand_r;
+  logic [SIZE-1:0] ALU_op_out_w /* synthesis preserve */;
+  reg [SIZE-1:0] ALU_left_operand_r /* synthesis preserve */;
+  reg [SIZE-1:0] ALU_right_operand_r /* synthesis preserve */;
 
   ALU #(
         .SIZE(SIZE)
@@ -454,8 +467,8 @@ module top_level #(
   //////////////////////////////////////////////////////////////////////////////////////
   // Accumulator logic
   ///////////////////////////////////////////////////////////////////////////////////////
-  wire [7:0] ACU_out_val_w;
-  reg  [7:0] ACC_in_val_r;
+  wire [SIZE-1:0] ACU_out_val_w /* synthesis preserve */;
+  reg  [SIZE-1:0] ACC_in_val_r /* synthesis preserve */;
   assign ACC_in_val_r = ALU_op_out_w;
   reg        ACC_CE_r;
   ACU #(
@@ -473,10 +486,10 @@ module top_level #(
   // Register File  logic
   ///////////////////////////////////////////////////////////////////////////////////////
 
-  wire [7:0] REG_FILE_DATA_OUT_r;
-  reg  [3:0] REG_FILE_ADDR_r;
-  reg  [3:0] REG_FILE_CE_r;
-  reg  [7:0] REG_FILE_DATA_IN_r;
+  wire [DATA_SIZE-1:0] REG_FILE_DATA_OUT_r /* synthesis preserve */;
+  reg  [SIZE-1:0] REG_FILE_ADDR_r /* synthesis preserve */;
+  reg  [SIZE-1:0] REG_FILE_CE_r /* synthesis preserve */;
+  reg  [DATA_SIZE-1:0] REG_FILE_DATA_IN_r /* synthesis preserve */;
   
   REG_FILE  REG_FILE_inst (
               .CLK(clk),
@@ -493,16 +506,37 @@ module top_level #(
   reg [ADDR_SIZE-1:0] PC_STACK_ADDR_r;
   wire PC_STACK_W_w = (curr_state == EXEC && next_state == EXEC && OP_CODE_r == OP_JMP) ? 1'b1 : 1'b0;
   wire PC_STACK_R_w = (curr_state == DECODE && next_state == DECODE && OP_CODE_r == OP_RTN) ? 1'b1 : 1'b0;
+  wire stack_full_w;
+  wire stack_empty_w;
 
   STACK #(
-           .DATA_SIZE(DATA_SIZE),
-           .STACK_SIZE(STACK_SIZE)
+            .DATA_SIZE(ADDR_SIZE),  // Changed from DATA_SIZE to ADDR_SIZE
+            .STACK_SIZE(STACK_SIZE)
     ) STACK_inst (
-           .CLK(clk),
-           .RSTN(rstn),
-           .W(PC_STACK_W_w),
-           .R(PC_STACK_R_w),
-           .DATA_WR(PC_ADDR_r),
-           .DATA_RD(PC_STACK_ADDR_r)
+            .CLK(clk),
+            .RSTN(rstn),
+            .W(PC_STACK_W_w),
+            .R(PC_STACK_R_w),
+            .DATA_WR(PC_ADDR_r),
+            .DATA_RD(PC_STACK_ADDR_r),
+            .stack_full(stack_full_w),
+            .stack_empty(stack_empty_w)
     );
-endmodule
+
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Assignments
+  ///////////////////////////////////////////////////////////////////////////////////////
+  assign PC_ADDR_out = PC_ADDR_r;
+  assign OP_CODE_out= OP_CODE_r;
+  assign OP_MEM_OUT= MEM_OP_r;
+  assign LEFT_OPERAND_out= LEFT_OPERAND_r;
+  assign RIGHT_OPERAND_out= RIGHT_OPERAND_r;
+  assign ACC_OUT= ACU_out_val_w;
+  assign ALU_OUT= ALU_op_out_w;
+  assign REG_FILE_OUT= REG_FILE_DATA_OUT_r;
+  assign DATA_MEM_OUT= DATA_MEM_RD_r;
+  assign curr_state_out = curr_state;
+  assign next_state_out = next_state;
+  assign stack_full_out = stack_full_w;
+  assign stack_empty_out = stack_empty_w;
+  endmodule
