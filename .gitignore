@@ -6,4 +6,10 @@
 *.vcd
 *.vcd*
 *.vcd.gz
-layered_tb/
+layered_tb_old/
+quartus_Files/
+modelsim/
+layered_tb/work/
+*.mti
+*.wlf
+*.mpf
