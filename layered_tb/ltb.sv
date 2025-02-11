@@ -11,7 +11,7 @@ class transaction;
     rand bit [DATA_WIDTH-1:0] src;
     rand bit [ALU_OP_BITS-1:0] op;
     rand bit carry_flag;
-    rand bit temp_result;
+    rand bit [DATA_WIDTH:0] temp_result;
 
     constraint op_in_range { op <= 4'b1111 && op >= 4'b0000; } // op must be 4 bits (0 to 15)
 endclass
@@ -63,7 +63,7 @@ interface alu_intf(input logic clk, reset);
     logic carry_flag;
 
     // ALU outputs
-    logic [DATA_WIDTH-1:0] temp_result;
+    logic [DATA_WIDTH:0] temp_result;
 
     // Monitor clock
     clocking mon_clk @(posedge clk);
@@ -178,7 +178,7 @@ class scoreboard;
     mailbox mon_mb;
     int trans_num;
 
-    logic [DATA_W-1:0] acu_value;
+    logic [DATA_W:0] acu_value;
 
     function new(mailbox mon_mb);
         this.mon_mb = mon_mb;
@@ -203,30 +203,32 @@ class scoreboard;
     // Main task
     task main();
         transaction trans;
-        logic [DATA_W-1:0] expected_op_out;
+        logic [DATA_W:0] expected_op_out;
         forever begin
             #100; // wait for transaction
             $display("[SCRBD] Waiting for mail from monitor");
             mon_mb.get(trans);
-            $display("[SCRBD] Mail received: %p, a=%h", trans, acu_value);
+            $display("[SCRBD] Mail received: %p, a=%h", trans, trans.acc);
             case (trans.op)
                 OP_PASS: expected_op_out = {1'b0, trans.src};
-                OP_ADD: expected_op_out = acu_value + trans.src + trans.carry_flag;
-                OP_SUB: expected_op_out = acu_value - trans.src - trans.carry_flag;
-                OP_INC: expected_op_out = acu_value + 1'b1;
-                OP_DEC: expected_op_out = acu_value - 1'b1;
-                OP_RL:  expected_op_out = {acu_value[DATA_W-2:0], acu_value[DATA_W-1]};
-                OP_RR:  expected_op_out = {acu_value[0], acu_value[DATA_W-1:1]};
-                OP_AND: expected_op_out = acu_value & trans.src;
-                OP_OR:  expected_op_out = acu_value | trans.src;
-                OP_XOR: expected_op_out = acu_value ^ trans.src;
-                OP_NOT: expected_op_out = ~acu_value;
-                default: $error("[SCRBD] Invalid operation code: %b", trans.op);
+                OP_ADD: expected_op_out = trans.acc + trans.src + trans.carry_flag;
+                OP_SUB: expected_op_out = trans.acc - trans.src - trans.carry_flag;
+                OP_INC: expected_op_out = trans.acc + 1'b1;
+                OP_DEC: expected_op_out = trans.acc - 1'b1;
+                OP_RL:  expected_op_out = {trans.acc[DATA_W-2:0], trans.acc[DATA_W-1]};
+                OP_RR:  expected_op_out = {trans.acc[0], trans.acc[DATA_W-1:1]};
+                OP_AND: expected_op_out = trans.acc & trans.src;
+                OP_OR:  expected_op_out = trans.acc | trans.src;
+                OP_XOR: expected_op_out = trans.acc ^ trans.src;
+                OP_NOT: expected_op_out = ~trans.acc;
+                // by default, pass acc value 
+                default: expected_op_out = trans.acc;   
             endcase
             acu_value = expected_op_out;
             if (expected_op_out !== trans.temp_result) begin
-                $error("[SCRBD] INVALID TEMP_RESULT!! EXPECTED: %h, GOT: %h", expected_op_out, trans.temp_result);
+                $fatal("[SCRBD] INVALID TEMP_RESULT!! EXPECTED: %h, GOT: %h", expected_op_out, trans.temp_result);
             end
+
             this.trans_num++;
         end
 
@@ -300,7 +302,7 @@ program test(alu_intf intf);
 
     initial begin
         env = new(intf);
-        env.gen.test_num = 20;
+        env.gen.test_num = 2000;
         env.main();
     end
 endprogram
