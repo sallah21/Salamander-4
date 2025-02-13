@@ -3,13 +3,13 @@
 // REG_FILE (Register File) Module
 //
 // Description:
-// This module implements a small register file containing 4 general-purpose 8-bit
-// registers. It supports synchronous read and write operations with registered
-// output. On reset, registers are initialized with sequential values starting
-// from 2 (i.e., R0=2, R1=3, R2=4, R3=5).
+// This module implements a small register file containing a variable number of 
+// general-purpose registers. It supports synchronous read and write operations 
+// with registered output. On reset, registers are initialized with sequential 
+// values starting from 2 (i.e., R0=2, R1=3, R2=4, ...).
 //
 // Features:
-// - 4 general-purpose registers
+// - Variable number of general-purpose registers
 // - 8-bit data width
 // - Synchronous read/write operations
 // - Registered output for better timing
@@ -17,15 +17,15 @@
 // - Single-port access
 //
 // Configuration:
-// - Number of Registers: 4 (fixed)
+// - Number of Registers: variable (parameterizable)
 // - Register Width: 8 bits (fixed)
-// - Address Width: 2 bits (supports 4 registers)
+// - Address Width: variable (dependent on register count)
 //
 // Ports:
 // Inputs:
 // - CLK:      System clock, positive edge triggered
 // - RSTN:     Asynchronous reset, active low
-// - ADDR:     Register address [3:0]
+// - ADDR:     Register address [$clog2(REG_COUNT)-1:0]
 // - CE:       Chip enable for write operations
 // - DATA_IN:  Data input for write operations [7:0]
 //
@@ -35,7 +35,7 @@
 // Operation Modes:
 // 1. Reset (RSTN = 0):
 //    - All registers initialized sequentially
-//    - R0 = 2, R1 = 3, R2 = 4, R3 = 5
+//    - R0 = 2, R1 = 3, R2 = 4, ...
 //
 // 2. Write Operation (CE = 1):
 //    - On positive clock edge
@@ -51,38 +51,41 @@
 // providing the previous value until the next clock edge
 //////////////////////////////////////////////////////////////////////////////////
 
-module REG_FILE (
-    input CLK,                          // System clock
-    input RSTN,                         // Async reset, active low
-    input [3:0] ADDR,                   // Register address
-    input CE,                           // Write enable
-    input [7:0] DATA_IN,                // Write data input
-    output [7:0] DATA_OUT               // Read data output
+module REG_FILE #(
+    parameter REG_COUNT = 4,            // Number of registers
+    parameter DATA_WIDTH = 8            // Width of each register
+  ) (
+    input logic CLK,                    // System clock
+    input logic RSTN,                   // Async reset, active low
+    input logic [$clog2(REG_COUNT)-1:0] ADDR,  // Register address
+    input logic CE,                     // Write enable
+    input logic [DATA_WIDTH-1:0] DATA_IN,  // Write data input
+    output logic [DATA_WIDTH-1:0] DATA_OUT // Read data output
   );
 
   // Register array and output register
-  reg [7:0] DATA_r [3:0];               // Register file array
-  reg [7:0] DATA_OUT_r;                 // Output register
+  logic [DATA_WIDTH-1:0] data_r [REG_COUNT-1:0];  // Register file array
+  logic [DATA_WIDTH-1:0] data_out_r;              // Output register
 
   // Register file control logic
-  always @(posedge CLK or negedge RSTN)
-  begin
-    if (!RSTN)
+  always_ff @(posedge CLK or negedge RSTN) begin
+    if (!RSTN) begin
       // Initialize registers with sequential values
-      for (int i = 0; i < 4; i++)
-      begin
-        DATA_r[i] <= i + 2;             // R0=2, R1=3, R2=4, R3=5
+      for (int i = 0; i < REG_COUNT; i++) begin
+        data_r[i] <= i + 2;            // Sequential initialization
       end
-    else
-    begin
-      if (CE)
-        DATA_r[ADDR] <= DATA_IN;        // Synchronous write
+      data_out_r <= '0;
+    end else begin
+      // Synchronous read always active
+      data_out_r <= data_r[ADDR];
       
-      DATA_OUT_r <= DATA_r[ADDR];       // Synchronous read
+      // Synchronous write when enabled
+      if (CE) begin
+        data_r[ADDR] <= DATA_IN;
+      end
     end
   end
 
   // Output assignment
-  assign DATA_OUT = DATA_OUT_r;         // Registered output
-
+  assign DATA_OUT = data_out_r;
 endmodule
