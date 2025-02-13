@@ -75,37 +75,28 @@ module PC
   localparam [SIZE-1:0] MAX_VAL = (2**SIZE) - 1;   // Maximum counter value
 
   // Counter logic with async reset
-  always @(posedge clk or negedge rstn)
-  begin
-    if (!rstn)
-    begin
-      cnt_r <= {SIZE{1'b0}};             // Clear counter
-      max_size_reached_r <= 1'b0;        // Clear max flag
-    end
-    else
-    begin
-      // Jump operation
-      if (cnt_overwrite && (cnt_new_val < MAX_VAL))
-      begin
-        cnt_r <= cnt_new_val;            // Load jump address
-        max_size_reached_r <= 1'b0;      // Clear max flag
-      end
-      // Normal counting
-      if (inc)
-      begin
-        if (cnt_r < MAX_VAL)
-        begin
-          cnt_r <= cnt_r + 1'b1;         // Increment counter
-        end
-        else
-        begin
-          cnt_r <= {SIZE{1'b0}};         // Wrap to zero
-          max_size_reached_r <= 1'b1;    // Set max flag
+  always_ff @(posedge clk or negedge rstn) begin
+    if (!rstn) begin
+      cnt_r <= '0;                     // Clear counter
+      max_size_reached_r <= 1'b0;      // Clear max flag
+    end else begin
+      // Jump operation takes precedence
+      if (cnt_overwrite && (cnt_new_val <= MAX_VAL)) begin
+        cnt_r <= cnt_new_val;          // Load jump address
+        max_size_reached_r <= 1'b0;    // Clear max flag
+      end else if (inc) begin
+        if (cnt_r == MAX_VAL) begin
+          cnt_r <= '0;                 // Wrap to zero
+          max_size_reached_r <= 1'b1;  // Set max flag
+        end else begin
+          cnt_r <= cnt_r + 1'b1;       // Increment counter
+          max_size_reached_r <= 1'b0;  // Clear max flag
         end
       end
     end
   end
 
+  // Output assignments
   assign cnt_val = cnt_r;
   assign max_size_reached = max_size_reached_r;
 
