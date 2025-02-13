@@ -95,6 +95,7 @@ module top_level #(
   state_t curr_state /* synthesis preserve */;
   state_t next_state /* synthesis preserve */;
   logic PC_inc_r;  // Register to control PC increment
+
   // ===============================================
   // Processor State Descriptions
   // ===============================================
@@ -734,7 +735,7 @@ module top_level #(
   // Register File data paths
   wire [DATA_SIZE-1:0] REG_FILE_DATA_OUT_r /* synthesis preserve */; // Read data output
   reg  [SIZE-1:0] REG_FILE_ADDR_r /* synthesis preserve */;         // Register address
-  reg  [SIZE-1:0] REG_FILE_CE_r /* synthesis preserve */;          // Write enable
+  reg             REG_FILE_CE_r /* synthesis preserve */;          // Write enable
   reg  [DATA_SIZE-1:0] REG_FILE_DATA_IN_r /* synthesis preserve */; // Write data input
   
   // Register File instance
@@ -812,8 +813,61 @@ module top_level #(
             .DATA_RD(PC_STACK_ADDR_r), // Popped PC value
             .stack_full(stack_full_w),  // Full flag
             .stack_empty(stack_empty_w) // Empty flag
-    );
 
+      );
+
+  //////////////////////////////////////////////////////////////////////////////////
+  // Data Memory Subsystem
+  //
+  // Description:
+  // This section implements the data memory interface and control logic for the CPU.
+  // It provides read/write access to the data memory with parameterized width and depth.
+  // The memory operations are synchronized with the CPU clock and controlled by the
+  // instruction decoder.
+  //
+  // Interface Signals:
+  // - W_data_mem_r:     Write enable control for data memory
+  // - DATA_MEM_WR_r:    Write data bus [DATA_SIZE-1:0]
+  // - DATA_MEM_ADDR_r:  Memory address bus [ADDR_SIZE-1:0]
+  // - DATA_MEM_RD_r:    Read data bus [DATA_SIZE-1:0]
+  //
+  // Parameters:
+  // - DATA_SIZE: Width of data bus (from top-level parameter)
+  // - ADDR_SIZE: Width of address bus (from top-level parameter)
+  //
+  // Operation:
+  // 1. Write Operation (W_data_mem_r = 1):
+  //    - DATA_MEM_WR_r value written to DATA_MEM_ADDR_r location
+  //    - Operation completes in one clock cycle
+  //
+  // 2. Read Operation (W_data_mem_r = 0):
+  //    - Data from DATA_MEM_ADDR_r location appears on DATA_MEM_RD_r
+  //    - Read value available in next clock cycle
+  //
+  // Note: The 'synthesis preserve' attributes ensure critical control
+  // and data registers maintain their structure during synthesis
+  //////////////////////////////////////////////////////////////////////////////////
+
+  // Interface registers with synthesis preservation
+  reg W_data_mem_r /* synthesis preserve */;              // Write enable control
+  reg [DATA_SIZE-1:0] DATA_MEM_WR_r /* synthesis preserve */;    // Write data register
+  reg [ADDR_SIZE-1:0] DATA_MEM_ADDR_r /* synthesis preserve */;  // Address register
+  reg [DATA_SIZE-1:0] DATA_MEM_RD_r /* synthesis preserve */;    // Read data register
+
+    // Data Memory module instantiation
+    DATA_MEM #(
+               .DATA_SIZE(DATA_SIZE),     // Data width parameter
+               .ADDR_SIZE(ADDR_SIZE)      // Address width parameter
+             ) DATA_MEM_inst
+             (
+               .clk(clk),                // System clock
+               .rstn(rstn),              // Async reset, active low
+               .W(W_data_mem_r),         // Write enable
+               .DATA_WR(DATA_MEM_WR_r),  // Write data input
+               .ADDR(DATA_MEM_ADDR_r),   // Memory address
+               .DATA_RD(DATA_MEM_RD_r)   // Read data output
+     );
+  
   //////////////////////////////////////////////////////////////////////////////////////
   // Assignments
   ///////////////////////////////////////////////////////////////////////////////////////
