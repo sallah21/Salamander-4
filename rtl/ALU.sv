@@ -75,48 +75,76 @@ module ALU #(
     output [SIZE-1:0] op_out            // Operation result
   );
 
-  // Internal signals
-  logic carry_out_w;                     // Internal carry output
-  logic [SIZE-1:0] op_out_w;            // Internal operation result
-
   // Main operation logic
   always_comb begin
-    op_out_w = 'x;
-    carry_out_w = 1'b0;
+    {carry_out, op_out} = '0;  // Initialize both carry and output
     if (CE) begin
       case (OP_CODE)
-        // Arithmetic Operations using combined adder
-        OP_ADD: {carry_out_w, op_out_w} = left_operand + right_operand + carry_in;
-        OP_SUB: {carry_out_w, op_out_w} = left_operand - right_operand - carry_in;
+        // Arithmetic Operations with carry
+        OP_ADD: {carry_out, op_out} = left_operand + right_operand + carry_in;
+        OP_SUB: {carry_out, op_out} = left_operand - right_operand - carry_in;
         
-        // Optimized INC/DEC using the same adder
-        OP_INC: op_out_w = left_operand + 1'b1;
-        OP_DEC: op_out_w = left_operand - 1'b1;
+        // INC/DEC with carry detection
+        OP_INC: begin 
+            {carry_out, op_out} = left_operand + 1'b1;
+        end
+        OP_DEC: begin
+            {carry_out, op_out} = left_operand - 1'b1;
+        end
         
-        // Logical Operations
-        OP_AND: op_out_w = left_operand & right_operand;
-        OP_OR:  op_out_w = left_operand | right_operand;
-        OP_XOR: op_out_w = left_operand ^ right_operand;
-        OP_NOT: op_out_w = ~left_operand;
+        // Logical Operations (no carry)
+        OP_AND: begin
+            op_out = left_operand & right_operand;
+            carry_out = 1'b0;
+        end
+        OP_OR: begin
+            op_out = left_operand | right_operand;
+            carry_out = 1'b0;
+        end
+        OP_XOR: begin
+            op_out = left_operand ^ right_operand;
+            carry_out = 1'b0;
+        end
+        OP_NOT: begin
+            op_out = ~left_operand;
+            carry_out = 1'b0;
+        end
         
-        // Data Movement Operations
-        OP_LD:  op_out_w = right_operand;
-        OP_ST:  op_out_w = left_operand;
+        // Data Movement (no carry)
+        OP_LD: begin
+            op_out = right_operand;
+            carry_out = 1'b0;
+        end
+        OP_ST: begin
+            op_out = left_operand;
+            carry_out = 1'b0;
+        end
         
-        // Optimized shift operations using single shifter
-        OP_SHL: op_out_w = {left_operand[SIZE-2:0], 1'b0};
-        OP_SHR: op_out_w = {1'b0, left_operand[SIZE-1:1]};
+        // Shift operations with carry
+        OP_SHL: begin
+            op_out = {left_operand[SIZE-2:0], 1'b0};
+            carry_out = left_operand[SIZE-1];  // MSB becomes carry
+        end
+        OP_SHR: begin
+            op_out = {1'b0, left_operand[SIZE-1:1]};
+            carry_out = left_operand[0];       // LSB becomes carry
+        end
         
-        // Control Operations (No ALU usage)
-        OP_HLT, OP_JMP, OP_RTN, OP_NOP: op_out_w = 'x;
-        default: op_out_w = 'x;
-      endcase
+        // Control Operations (undefined output and no carry)
+        OP_HLT, OP_JMP, OP_RTN, OP_NOP: begin
+            op_out = 'x;
+            carry_out = 1'b0;
+        end
+        default: begin
+            op_out = 'x;
+            carry_out = 1'b0;
+        end      endcase
     end
   end
 
   // Output assignments
-  assign carry_out = carry_out_w;        // Propagate carry
-  assign op_out = op_out_w;             // Propagate result
+  // assign carry_out = carry_out_w;        // Propagate carry
+  // assign op_out = op_out_w;             // Propagate result
 
 
 `ifdef FORMAL
