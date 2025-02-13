@@ -71,7 +71,6 @@ module ALU #(
     input [SIZE-1:0] left_operand,       // First operand
     input [SIZE-1:0] right_operand,      // Second operand
     input carry_in,                      // Carry input
-    output zero_flag,                    // Zero result flag
     output carry_out,                    // Carry output
     output [SIZE-1:0] op_out            // Operation result
   );
@@ -80,96 +79,37 @@ module ALU #(
   logic carry_out_w;                     // Internal carry output
   logic [SIZE-1:0] op_out_w;            // Internal operation result
 
-
   // Main operation logic
-  always @(*)
-  begin
-    carry_out_w = 0;                     // Default carry out
-    op_out_w = 1'b0;                     // Default output
-
-    if (CE)
-    begin
-      // Operation decoder
+  always_comb begin
+    op_out_w = 'x;
+    carry_out_w = 1'b0;
+    if (CE) begin
       case (OP_CODE)
-        // Arithmetic Operations
-        OP_ADD:
-        begin
-          {carry_out_w, op_out_w} <= left_operand + right_operand + carry_in;
-        end 
-        OP_SUB:
-        begin
-          {carry_out_w, op_out_w} <= left_operand - right_operand - carry_in;
-        end 
+        // Arithmetic Operations using combined adder
+        OP_ADD: {carry_out_w, op_out_w} = left_operand + right_operand + carry_in;
+        OP_SUB: {carry_out_w, op_out_w} = left_operand - right_operand - carry_in;
+        
+        // Optimized INC/DEC using the same adder
+        OP_INC: op_out_w = left_operand + 1'b1;
+        OP_DEC: op_out_w = left_operand - 1'b1;
         
         // Logical Operations
-        OP_AND:
-        begin
-          op_out_w <= left_operand & right_operand;
-        end 
-        OP_OR:
-        begin
-          op_out_w <= left_operand | right_operand;
-        end 
-        OP_XOR:
-        begin
-          op_out_w <= left_operand ^ right_operand;
-        end 
-        OP_NOT:
-        begin
-          op_out_w <= ~left_operand;
-        end 
+        OP_AND: op_out_w = left_operand & right_operand;
+        OP_OR:  op_out_w = left_operand | right_operand;
+        OP_XOR: op_out_w = left_operand ^ right_operand;
+        OP_NOT: op_out_w = ~left_operand;
         
         // Data Movement Operations
-        OP_LD:
-        begin
-          op_out_w <= right_operand;
-        end
-        OP_ST:
-        begin
-          op_out_w <= left_operand;
-        end
+        OP_LD:  op_out_w = right_operand;
+        OP_ST:  op_out_w = left_operand;
         
-        // Increment/Decrement Operations
-        OP_INC:
-        begin
-          op_out_w <= left_operand + {{(SIZE-1){1'b0}}, 1'b1};
-        end 
-        OP_DEC:
-        begin
-          op_out_w <= left_operand - {{(SIZE-1){1'b0}}, 1'b1};
-        end 
-        
-        // Shift Operations
-        OP_SHL:
-        begin
-          op_out_w <= left_operand << 1;
-        end 
-        OP_SHR:
-        begin
-          op_out_w <= left_operand >> 1;
-        end 
+        // Optimized shift operations using single shifter
+        OP_SHL: op_out_w = {left_operand[SIZE-2:0], 1'b0};
+        OP_SHR: op_out_w = {1'b0, left_operand[SIZE-1:1]};
         
         // Control Operations (No ALU usage)
-        OP_HLT:
-        begin
-          {carry_out_w, op_out_w} <= 'x;
-        end
-        OP_JMP:
-        begin
-          {carry_out_w, op_out_w} <= 'x;
-        end
-        OP_RTN:
-        begin
-          {carry_out_w, op_out_w} <= 'x;
-        end
-        OP_NOP:
-        begin
-          {carry_out_w, op_out_w} <= 'x;
-        end 
-        default:
-        begin
-          {carry_out_w, op_out_w} <= 'x;
-        end
+        OP_HLT, OP_JMP, OP_RTN, OP_NOP: op_out_w = 'x;
+        default: op_out_w = 'x;
       endcase
     end
   end
