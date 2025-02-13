@@ -70,23 +70,11 @@ module ID
     output [3:0]  RIGHT_OPERAND   // Source operand
 );
 
-    // Internal signals
-    logic [3:0] OP_CODE_r, MEM_OP_r;
-    logic [7:0] OPERAND_r;
-    logic [3:0] LEFT_OPERAND_r, RIGHT_OPERAND_r;
-
-    always_comb begin
-        if (ID_CE) begin
-            OP_CODE_r <= INSTR[15:12];        // Extract operation code
-            MEM_OP_r <= INSTR[11:8];          // Extract memory operation
-            OPERAND_r <= INSTR[7:0];          // Extract full operand field
-        end
-    end 
 
     // Direct bit field assignments
-    assign OP_CODE = OP_CODE_r;        // Extract operation code
-    assign MEM_OP = MEM_OP_r;          // Extract memory operation
-    assign OPERAND = OPERAND_r;          // Extract full operand field
+    assign OP_CODE = ID_CE ? INSTR[15:12] : 'x;
+    assign MEM_OP = ID_CE ? INSTR[11:8] : 'x;
+    assign OPERAND = ID_CE ? INSTR[7:0] : 'x;
     assign LEFT_OPERAND = OPERAND[7:4];    // Extract destination operand
     assign RIGHT_OPERAND = OPERAND[3:0];   // Extract source operand
 
