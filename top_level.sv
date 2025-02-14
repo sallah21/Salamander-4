@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "rtl/OP_CODES.sv"
+
   //////////////////////////////////////////////////////////////////////////////////////
   // Module Description:
   // This module represents the top-level design of a simple CPU. It integrates various
@@ -22,7 +22,6 @@
   //
   // 1. FETCH (2'b00):
   //    - Fetches the next instruction from program memory using PC address
-  //    - Enables Instruction Decoder (ID_CE_r)
   //    - Prepares for instruction decoding
   //    - PC increment is controlled based on max_size condition
   //
@@ -51,7 +50,6 @@
   //
   // Control Signals:
   // - PC_inc_r: Controls program counter increment
-  // - ID_CE_r: Instruction decoder clock enable
   // - ACC_CE_r: Accumulator clock enable
   // - cnt_overwrite_r: Counter overwrite control for jumps
   // - jmp_occur_r: Jump occurrence flag
@@ -230,7 +228,6 @@ module top_level #(
   //
   // Key Signals:
   // - INSTR_r [15:0]:        Raw instruction from program memory
-  // - ID_CE_r:               Instruction decoder clock enable
   // - OP_CODE_r [SIZE-1:0]:  Decoded operation code (ADD, SUB, etc.)
   // - MEM_OP_r [SIZE-1:0]:   Memory operation type (LOAD, STORE, etc.)
   // - OPERAND_r:             Immediate operand or address
@@ -240,7 +237,6 @@ module top_level #(
   // Operation:
   // 1. Instruction Fetch:
   //    - INSTR_r receives instruction from PROG_MEM_DATA_w
-  //    - ID_CE_r enables decoding on next clock
   //
   // 2. Instruction Decode:
   //    - Extracts operation code and memory operation type
@@ -254,7 +250,6 @@ module top_level #(
   // Instruction word and its components
   logic [15:0] INSTR_r /* synthesis preserve */;        // Full instruction word
   assign INSTR_r = PROG_MEM_DATA_w;                     // Load from program memory
-  logic ID_CE_r;                                        // Decoder enable signal
   
   // Decoded instruction fields
   logic [SIZE-1:0] OP_CODE_r /* synthesis preserve */;      // Operation code
@@ -267,7 +262,6 @@ module top_level #(
   ID  ID_inst
       (
         .INSTR(INSTR_r),           // Input instruction word
-        .ID_CE(ID_CE_r),           // Clock enable
         .OP_CODE(OP_CODE_r),       // Decoded operation
         .MEM_OP(MEM_OP_r),         // Memory operation type
         .OPERAND(OPERAND_r),       // Immediate/address value
@@ -589,14 +583,12 @@ module top_level #(
           begin
             PC_inc_r <= 1'b0;
           end
-          ID_CE_r <= 1'b1;
           ACC_CE_r <= 1'b0;
           next_state <= DECODE;
         end
         DECODE:
         begin
           PC_inc_r <= 1'b0;
-          ID_CE_r <= 1'b0;
           if (OP_CODE_r == OP_JMP)
           begin
             cnt_new_val_r <= LEFT_OPERAND_r ;

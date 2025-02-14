@@ -62,7 +62,6 @@
 module ID 
 (
     input  [15:0] INSTR,          // Instruction word input
-    input         ID_CE,          // Chip enable
     output [3:0]  OP_CODE,        // ALU operation code
     output [3:0]  MEM_OP,         // Memory operation code
     output [7:0]  OPERAND,        // Combined operand field
@@ -72,9 +71,9 @@ module ID
 
 
     // Direct bit field assignments
-    assign OP_CODE = ID_CE ? INSTR[15:12] : 'x;
-    assign MEM_OP = ID_CE ? INSTR[11:8] : 'x;
-    assign OPERAND = ID_CE ? INSTR[7:0] : 'x;
+    assign OP_CODE = INSTR[15:12];
+    assign MEM_OP = INSTR[11:8];
+    assign OPERAND = INSTR[7:0];
     assign LEFT_OPERAND = OPERAND[7:4];    // Extract destination operand
     assign RIGHT_OPERAND = OPERAND[3:0];   // Extract source operand
 
