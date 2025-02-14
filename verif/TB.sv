@@ -29,7 +29,6 @@ module CPU_toplevel_tb;
        .clk(clk),
        .rstn(rstn),
        .W(W),
-       .OVERWRITE(OVERWRITE),
        .ADDR(ADDR),
        .DATA_WR(DATA_WR)
    );
