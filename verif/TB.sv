@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-
+`include "../rtl/OP_CODES.sv"
 module CPU_toplevel_tb;
 
    // Parameters

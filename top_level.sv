@@ -22,7 +22,6 @@
   //
   // 1. FETCH (2'b00):
   //    - Fetches the next instruction from program memory using PC address
-  //    - Enables Instruction Decoder (ID_CE_r)
   //    - Prepares for instruction decoding
   //    - PC increment is controlled based on max_size condition
   //
@@ -51,7 +50,6 @@
   //
   // Control Signals:
   // - PC_inc_r: Controls program counter increment
-  // - ID_CE_r: Instruction decoder clock enable
   // - ACC_CE_r: Accumulator clock enable
   // - cnt_overwrite_r: Counter overwrite control for jumps
   // - jmp_occur_r: Jump occurrence flag
@@ -95,312 +93,6 @@ module top_level #(
   state_t curr_state /* synthesis preserve */;
   state_t next_state /* synthesis preserve */;
   logic PC_inc_r;  // Register to control PC increment
-
-  // ===============================================
-  // Processor State Descriptions
-  // ===============================================
-  //
-  
-  always @( posedge clk or negedge rstn )
-  begin
-    if (!rstn)
-    begin
-      curr_state <= FETCH;
-      next_state <= FETCH;
-      PC_inc_r <= 1'b0;
-      cnt_overwrite_r <= 1'b0;
-    end
-    else
-    begin
-      if (!W)
-      begin
-        curr_state <= next_state;
-      end
-      case (curr_state)
-        FETCH:
-        begin
-          if (max_size_reached_r != 1'b1)
-          begin
-            PC_inc_r <= 1'b0;
-          end
-          ID_CE_r <= 1'b1;
-          ACC_CE_r <= 1'b0;
-          next_state <= DECODE;
-        end
-        DECODE:
-        begin
-          PC_inc_r <= 1'b0;
-          ID_CE_r <= 1'b0;
-          if (OP_CODE_r == OP_JMP)
-          begin
-            cnt_new_val_r <= LEFT_OPERAND_r ;
-            jmp_occur_r <= 1'b1;
-          end 
-          else if (OP_CODE_r == OP_RTN)
-          begin
-            cnt_new_val_r <= PC_STACK_ADDR_r + 1; // Move to next instruction 
-            rnt_occur_r <= 1'b1;
-          end
-          else if (MEM_OP_r == NONE)
-          begin
-            ALU_CE_r <= 1'b0;
-            ALU_left_operand_r <= LEFT_OPERAND_r;
-            ALU_right_operand_r <= RIGHT_OPERAND_r; 
-          end
-          else if (OP_CODE_r == OP_ST)
-          begin
-            case (MEM_OP_r)
-            OP_REG:
-            begin
-              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
-              REG_FILE_CE_r <= 1'b0;
-            end 
-            OP_MEM:
-            begin
-              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
-              W_data_mem_r <= 1'b0;
-            end
-            default:
-            begin
-              // Store operand directly to ACU through ALU
-              ALU_left_operand_r <= LEFT_OPERAND_r;
-              ALU_right_operand_r <= 'x; 
-              ACC_CE_r <= 1'b0;
-              ALU_CE_r <= 1'b0;
-            end
-            endcase
-          end
-          else if (OP_CODE_r == OP_LD)
-          begin
-            case (MEM_OP_r)
-            OP_REG:
-            begin
-              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
-              REG_FILE_CE_r <= 1'b0;
-            end
-            OP_MEM:
-            begin
-              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
-              W_data_mem_r <= 1'b0;
-            end
-            endcase
-          end 
-          else 
-          begin
-            case (MEM_OP_r)
-            REG_TO_REG:
-            begin
-              // Change addres of register in register file to get data out
-              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
-              REG_FILE_CE_r <= 1'b0;
-            end
-            REG_TO_MEM:
-            begin
-              // Privide right operand as addres to register disable write on RF  
-              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
-              REG_FILE_CE_r <= 1'b0;
-              DATA_MEM_ADDR_r <= LEFT_OPERAND_r;
-            end
-            MEM_TO_REG:
-            begin
-              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
-              REG_FILE_ADDR_r <= LEFT_OPERAND_r;
-              REG_FILE_CE_r <= 1'b0;
-            end
-            MEM_TO_MEM:
-            begin
-              // Provide right operand as addres to data memory
-              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
-              W_data_mem_r <= 1'b0;
-            end
-            default:
-            begin
-              ALU_left_operand_r <= ACU_out_val_w;
-              ALU_right_operand_r <= REG_FILE_DATA_OUT_r; 
-            end
-            endcase  
-          end
-          next_state <= EXEC;
-        end
-        EXEC:
-        begin
-          if (OP_CODE_r == OP_JMP || OP_CODE_r == OP_RTN)
-          begin
-            cnt_overwrite_r <= 1'b1;
-          end
-          if (OP_CODE_r == OP_NOP)
-          begin
-            ALU_CE_r <= 1'b0;
-            ACC_CE_r <= 1'b0;
-            REG_FILE_CE_r <= 1'b0;
-            W_data_mem_r <= 1'b0;
-          end 
-          else if (MEM_OP_r == NONE)
-          begin
-            ALU_CE_r <= 1'b1;
-            ACC_CE_r <= 1'b0;
-          end 
-          else if (OP_CODE_r == OP_ST)
-          begin
-            case (MEM_OP_r)
-            OP_REG:
-            begin
-              REG_FILE_DATA_IN_r <= LEFT_OPERAND_r;
-              REG_FILE_CE_r <= 1'b1;
-            end 
-            OP_MEM:
-            begin
-              DATA_MEM_WR_r <= LEFT_OPERAND_r;
-              W_data_mem_r <= 1'b1;
-            end
-            default:
-            begin
-              // Store operand directly to ACU through ALU
-              ALU_CE_r <= 1'b1;
-              ACC_CE_r <= 1'b1;
-            end
-            endcase
-          end 
-          else if (OP_CODE_r == OP_LD)
-            begin 
-              ALU_CE_r <= 1'b1;
-              ACC_CE_r <= 1'b1;
-              case (MEM_OP_r)
-              OP_REG:
-              begin
-                ALU_right_operand_r <= REG_FILE_DATA_OUT_r;
-              end
-              OP_MEM:
-              begin
-                ALU_right_operand_r <= DATA_MEM_RD_r;
-              end
-              endcase
-            end 
-          else
-          begin
-            case (MEM_OP_r)
-            REG_TO_REG:
-            begin
-              // Change addres of register to new register, provide output as input and enable write
-              REG_FILE_DATA_IN_r <= REG_FILE_DATA_OUT_r;
-              REG_FILE_ADDR_r <= LEFT_OPERAND_r;
-              REG_FILE_CE_r <= 1'b1;
-            end
-            REG_TO_MEM:
-            begin
-              // Enable write on data memory and provide output of register file  as input to memory
-              W_data_mem_r <= 1'b1;
-              DATA_MEM_WR_r <= REG_FILE_DATA_OUT_r;
-              DATA_MEM_ADDR_r <= LEFT_OPERAND_r;
-            end
-            MEM_TO_REG:
-            begin
-              // Enable write on register file and provide output of data memory as input
-              W_data_mem_r <= 1'b0;
-              REG_FILE_DATA_IN_r <= DATA_MEM_RD_r;
-              REG_FILE_CE_r <= 1'b1;
-            end
-            MEM_TO_MEM:
-            begin
-              // Take output of data memory and write it to another memory location
-              DATA_MEM_WR_r <=DATA_MEM_RD_r;
-              DATA_MEM_ADDR_r <= LEFT_OPERAND_r;
-              W_data_mem_r <= 1'b1;
-            end
-            // default:
-            // begin
-  
-            // end
-            endcase
-          end
-
-          PC_inc_r <= 1'b0;
-          next_state <= WRITE_BACK; 
-        end
-        WRITE_BACK:
-        begin
-          next_state <= FETCH;
-          if (jmp_occur_r)
-          begin
-            PC_inc_r <= 1'b0;  
-            jmp_occur_r <= 1'b0;
-          end
-          else if (rnt_occur_r)
-          begin
-            PC_inc_r <= 1'b0;  
-            rnt_occur_r <= 1'b0;
-          end
-          else begin
-            PC_inc_r <= 1'b1;  
-          end 
-          if (OP_CODE_r == OP_JMP || OP_CODE_r == OP_RTN)
-          begin
-            cnt_overwrite_r <= 1'b0;
-          end
-          else if (MEM_OP_r == NONE)
-          begin
-            ALU_CE_r <= 1'b1;
-            ACC_CE_r <= 1'b1;
-          end
-          else if (OP_CODE_r == OP_ST)
-          begin
-            case (MEM_OP_r)
-            OP_REG:
-            begin
-              REG_FILE_CE_r <= 1'b0;
-            end 
-            OP_MEM:
-            begin
-              W_data_mem_r <= 1'b0;
-            end
-            default:
-            begin
-              // Store operand directly to ACU through ALU
-              ALU_CE_r <= 1'b0;
-              ACC_CE_r <= 1'b0;
-            end
-            endcase
-          end
-          else if (OP_CODE_r == OP_LD)
-          begin
-            ACC_CE_r <= 1'b0;
-            ALU_CE_r <= 1'b0;
-          end
-          else
-          begin
-            case (MEM_OP_r)
-            REG_TO_REG:
-            begin
-              // Disable write 
-              REG_FILE_CE_r <= 1'b0;
-            end
-            REG_TO_MEM:
-            begin
-              // Disable write on data memory
-              W_data_mem_r <= 1'b0;
-            end
-            MEM_TO_REG:
-            begin
-              // Disable write on register file
-              REG_FILE_CE_r <= 1'b0;
-            end
-            MEM_TO_MEM:
-            begin
-              // Disable write on data memory
-              W_data_mem_r <= 1'b0;
-            end
-          endcase
-          end 
-        end
-        default:
-        begin
-          curr_state <= FETCH;
-          next_state <= FETCH;
-          PC_inc_r <= 1'b0;
-        end
-      endcase
-    end
-  end
 
 
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -536,7 +228,6 @@ module top_level #(
   //
   // Key Signals:
   // - INSTR_r [15:0]:        Raw instruction from program memory
-  // - ID_CE_r:               Instruction decoder clock enable
   // - OP_CODE_r [SIZE-1:0]:  Decoded operation code (ADD, SUB, etc.)
   // - MEM_OP_r [SIZE-1:0]:   Memory operation type (LOAD, STORE, etc.)
   // - OPERAND_r:             Immediate operand or address
@@ -546,7 +237,6 @@ module top_level #(
   // Operation:
   // 1. Instruction Fetch:
   //    - INSTR_r receives instruction from PROG_MEM_DATA_w
-  //    - ID_CE_r enables decoding on next clock
   //
   // 2. Instruction Decode:
   //    - Extracts operation code and memory operation type
@@ -560,7 +250,6 @@ module top_level #(
   // Instruction word and its components
   logic [15:0] INSTR_r /* synthesis preserve */;        // Full instruction word
   assign INSTR_r = PROG_MEM_DATA_w;                     // Load from program memory
-  logic ID_CE_r;                                        // Decoder enable signal
   
   // Decoded instruction fields
   logic [SIZE-1:0] OP_CODE_r /* synthesis preserve */;      // Operation code
@@ -573,7 +262,6 @@ module top_level #(
   ID  ID_inst
       (
         .INSTR(INSTR_r),           // Input instruction word
-        .ID_CE(ID_CE_r),           // Clock enable
         .OP_CODE(OP_CODE_r),       // Decoded operation
         .MEM_OP(MEM_OP_r),         // Memory operation type
         .OPERAND(OPERAND_r),       // Immediate/address value
@@ -868,6 +556,311 @@ module top_level #(
                .DATA_RD(DATA_MEM_RD_r)   // Read data output
      );
   
+  // ===============================================
+  // Processor State Descriptions
+  // ===============================================
+  //
+  
+  always @( posedge clk or negedge rstn )
+  begin
+    if (!rstn)
+    begin
+      curr_state <= FETCH;
+      next_state <= FETCH;
+      PC_inc_r <= 1'b0;
+      cnt_overwrite_r <= 1'b0;
+    end
+    else
+    begin
+      if (!W)
+      begin
+        curr_state <= next_state;
+      end
+      case (curr_state)
+        FETCH:
+        begin
+          if (max_size_reached_r != 1'b1)
+          begin
+            PC_inc_r <= 1'b0;
+          end
+          ACC_CE_r <= 1'b0;
+          next_state <= DECODE;
+        end
+        DECODE:
+        begin
+          PC_inc_r <= 1'b0;
+          if (OP_CODE_r == OP_JMP)
+          begin
+            cnt_new_val_r <= LEFT_OPERAND_r ;
+            jmp_occur_r <= 1'b1;
+          end 
+          else if (OP_CODE_r == OP_RTN)
+          begin
+            cnt_new_val_r <= PC_STACK_ADDR_r + 1; // Move to next instruction 
+            rnt_occur_r <= 1'b1;
+          end
+          else if (MEM_OP_r == NONE)
+          begin
+            ALU_CE_r <= 1'b0;
+            ALU_left_operand_r <= LEFT_OPERAND_r;
+            ALU_right_operand_r <= RIGHT_OPERAND_r; 
+          end
+          else if (OP_CODE_r == OP_ST)
+          begin
+            case (MEM_OP_r)
+            OP_REG:
+            begin
+              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b0;
+            end 
+            OP_MEM:
+            begin
+              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
+              W_data_mem_r <= 1'b0;
+            end
+            default:
+            begin
+              // Store operand directly to ACU through ALU
+              ALU_left_operand_r <= LEFT_OPERAND_r;
+              ALU_right_operand_r <= 'x; 
+              ACC_CE_r <= 1'b0;
+              ALU_CE_r <= 1'b0;
+            end
+            endcase
+          end
+          else if (OP_CODE_r == OP_LD)
+          begin
+            case (MEM_OP_r)
+            OP_REG:
+            begin
+              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b0;
+            end
+            OP_MEM:
+            begin
+              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
+              W_data_mem_r <= 1'b0;
+            end
+            endcase
+          end 
+          else 
+          begin
+            case (MEM_OP_r)
+            REG_TO_REG:
+            begin
+              // Change addres of register in register file to get data out
+              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b0;
+            end
+            REG_TO_MEM:
+            begin
+              // Privide right operand as addres to register disable write on RF  
+              REG_FILE_ADDR_r <= RIGHT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b0;
+              DATA_MEM_ADDR_r <= LEFT_OPERAND_r;
+            end
+            MEM_TO_REG:
+            begin
+              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
+              REG_FILE_ADDR_r <= LEFT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b0;
+            end
+            MEM_TO_MEM:
+            begin
+              // Provide right operand as addres to data memory
+              DATA_MEM_ADDR_r <= RIGHT_OPERAND_r;
+              W_data_mem_r <= 1'b0;
+            end
+            default:
+            begin
+              ALU_left_operand_r <= ACU_out_val_w;
+              ALU_right_operand_r <= REG_FILE_DATA_OUT_r; 
+            end
+            endcase  
+          end
+          next_state <= EXEC;
+        end
+        EXEC:
+        begin
+          if (OP_CODE_r == OP_JMP || OP_CODE_r == OP_RTN)
+          begin
+            cnt_overwrite_r <= 1'b1;
+          end
+          if (OP_CODE_r == OP_NOP)
+          begin
+            ALU_CE_r <= 1'b0;
+            ACC_CE_r <= 1'b0;
+            REG_FILE_CE_r <= 1'b0;
+            W_data_mem_r <= 1'b0;
+          end 
+          else if (MEM_OP_r == NONE)
+          begin
+            ALU_CE_r <= 1'b1;
+            ACC_CE_r <= 1'b0;
+          end 
+          else if (OP_CODE_r == OP_ST)
+          begin
+            case (MEM_OP_r)
+            OP_REG:
+            begin
+              REG_FILE_DATA_IN_r <= LEFT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b1;
+            end 
+            OP_MEM:
+            begin
+              DATA_MEM_WR_r <= LEFT_OPERAND_r;
+              W_data_mem_r <= 1'b1;
+            end
+            default:
+            begin
+              // Store operand directly to ACU through ALU
+              ALU_CE_r <= 1'b1;
+              ACC_CE_r <= 1'b1;
+            end
+            endcase
+          end 
+          else if (OP_CODE_r == OP_LD)
+            begin 
+              ALU_CE_r <= 1'b1;
+              ACC_CE_r <= 1'b1;
+              case (MEM_OP_r)
+              OP_REG:
+              begin
+                ALU_right_operand_r <= REG_FILE_DATA_OUT_r;
+              end
+              OP_MEM:
+              begin
+                ALU_right_operand_r <= DATA_MEM_RD_r;
+              end
+              endcase
+            end 
+          else
+          begin
+            case (MEM_OP_r)
+            REG_TO_REG:
+            begin
+              // Change addres of register to new register, provide output as input and enable write
+              REG_FILE_DATA_IN_r <= REG_FILE_DATA_OUT_r;
+              REG_FILE_ADDR_r <= LEFT_OPERAND_r;
+              REG_FILE_CE_r <= 1'b1;
+            end
+            REG_TO_MEM:
+            begin
+              // Enable write on data memory and provide output of register file  as input to memory
+              W_data_mem_r <= 1'b1;
+              DATA_MEM_WR_r <= REG_FILE_DATA_OUT_r;
+              DATA_MEM_ADDR_r <= LEFT_OPERAND_r;
+            end
+            MEM_TO_REG:
+            begin
+              // Enable write on register file and provide output of data memory as input
+              W_data_mem_r <= 1'b0;
+              REG_FILE_DATA_IN_r <= DATA_MEM_RD_r;
+              REG_FILE_CE_r <= 1'b1;
+            end
+            MEM_TO_MEM:
+            begin
+              // Take output of data memory and write it to another memory location
+              DATA_MEM_WR_r <=DATA_MEM_RD_r;
+              DATA_MEM_ADDR_r <= LEFT_OPERAND_r;
+              W_data_mem_r <= 1'b1;
+            end
+            // default:
+            // begin
+  
+            // end
+            endcase
+          end
+
+          PC_inc_r <= 1'b0;
+          next_state <= WRITE_BACK; 
+        end
+        WRITE_BACK:
+        begin
+          next_state <= FETCH;
+          if (jmp_occur_r)
+          begin
+            PC_inc_r <= 1'b0;  
+            jmp_occur_r <= 1'b0;
+          end
+          else if (rnt_occur_r)
+          begin
+            PC_inc_r <= 1'b0;  
+            rnt_occur_r <= 1'b0;
+          end
+          else begin
+            PC_inc_r <= 1'b1;  
+          end 
+          if (OP_CODE_r == OP_JMP || OP_CODE_r == OP_RTN)
+          begin
+            cnt_overwrite_r <= 1'b0;
+          end
+          else if (MEM_OP_r == NONE)
+          begin
+            ALU_CE_r <= 1'b1;
+            ACC_CE_r <= 1'b1;
+          end
+          else if (OP_CODE_r == OP_ST)
+          begin
+            case (MEM_OP_r)
+            OP_REG:
+            begin
+              REG_FILE_CE_r <= 1'b0;
+            end 
+            OP_MEM:
+            begin
+              W_data_mem_r <= 1'b0;
+            end
+            default:
+            begin
+              // Store operand directly to ACU through ALU
+              ALU_CE_r <= 1'b0;
+              ACC_CE_r <= 1'b0;
+            end
+            endcase
+          end
+          else if (OP_CODE_r == OP_LD)
+          begin
+            ACC_CE_r <= 1'b0;
+            ALU_CE_r <= 1'b0;
+          end
+          else
+          begin
+            case (MEM_OP_r)
+            REG_TO_REG:
+            begin
+              // Disable write 
+              REG_FILE_CE_r <= 1'b0;
+            end
+            REG_TO_MEM:
+            begin
+              // Disable write on data memory
+              W_data_mem_r <= 1'b0;
+            end
+            MEM_TO_REG:
+            begin
+              // Disable write on register file
+              REG_FILE_CE_r <= 1'b0;
+            end
+            MEM_TO_MEM:
+            begin
+              // Disable write on data memory
+              W_data_mem_r <= 1'b0;
+            end
+          endcase
+          end 
+        end
+        default:
+        begin
+          curr_state <= FETCH;
+          next_state <= FETCH;
+          PC_inc_r <= 1'b0;
+        end
+      endcase
+    end
+  end
+
+
   //////////////////////////////////////////////////////////////////////////////////////
   // Assignments
   ///////////////////////////////////////////////////////////////////////////////////////
