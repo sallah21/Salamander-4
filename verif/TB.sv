@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-
+`include "../rtl/OP_CODES.sv"
 module CPU_toplevel_tb;
 
    // Parameters
@@ -29,7 +29,6 @@ module CPU_toplevel_tb;
        .clk(clk),
        .rstn(rstn),
        .W(W),
-       .OVERWRITE(OVERWRITE),
        .ADDR(ADDR),
        .DATA_WR(DATA_WR)
    );

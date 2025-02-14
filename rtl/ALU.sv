@@ -62,7 +62,7 @@
 // - Control operations (HLT, JMP, RTN, NOP) set outputs to 'x'
 // - Zero flag is updated for arithmetic operations
 //////////////////////////////////////////////////////////////////////////////////
-
+`include "OP_CODES.sv"
 module ALU #(
     parameter SIZE = 8                    // Width of operands and result
   ) (
@@ -71,8 +71,8 @@ module ALU #(
     input [SIZE-1:0] left_operand,       // First operand
     input [SIZE-1:0] right_operand,      // Second operand
     input carry_in,                      // Carry input
-    output carry_out,                    // Carry output
-    output [SIZE-1:0] op_out            // Operation result
+    output logic carry_out,                    // Carry output
+    output logic [SIZE-1:0] op_out            // Operation result
   );
 
   // Main operation logic
