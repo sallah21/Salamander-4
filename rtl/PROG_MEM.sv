@@ -72,11 +72,7 @@ module PROG_MEM #(
   begin
     if (!rstn)
     begin
-      // Initialize all memory locations to 'x'
-      for (int i = 0; i < 2**ADDR_SIZE; i++)
-      begin
-        int_mem_r[i] <= {DATA_SIZE{1'bx}};  // Mark as uninitialized
-      end
+        DATA_reg <= '0;
     end
     else if (W)
     begin

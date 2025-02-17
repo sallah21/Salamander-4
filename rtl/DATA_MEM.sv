@@ -65,14 +65,16 @@ module DATA_MEM #(
     
     // Address validation
     logic addr_valid = (ADDR < MEM_SIZE);
+    initial begin
+        for (int i = 0; i < MEM_SIZE; i++) begin
+            mem_r[i] <= i[DATA_SIZE-1:0];  // Truncate to data width
+        end
+    end 
 
     // Synchronous write with asynchronous reset
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin
-            // Initialize memory with sequential values
-            for (int i = 0; i < MEM_SIZE; i++) begin
-                mem_r[i] <= i[DATA_SIZE-1:0];  // Truncate to data width
-            end
+           
         end else if (W && addr_valid) begin
             mem_r[ADDR] <= DATA_WR;
         end
